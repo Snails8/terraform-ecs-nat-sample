@@ -1,0 +1,9 @@
+# IED
+.idea
+
+.env
+
+# Terraform
+.terraform
+*.tfstate
+*.tfstate.backup
