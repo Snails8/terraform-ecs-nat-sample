@@ -5,7 +5,7 @@ provider "aws" {
 }
 
 variable "app_name" {
-  default = "suzuki-0test-app"
+  default = "suzuki-test-app"
 }  
 // variable 変数
 // default のIPアドレスを設定している
