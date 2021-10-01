@@ -1,9 +1,9 @@
 # =======================================================
 # EC2
-# 1. OS選択, SSD選択
+# 1. Amazon マシンイメージ (AMI) 選択
 # 2. インスタンスタイプの選択: ex) t2.micro
 # 3. インスタンス詳細設定: VPC選択, subnet選択, etc..
-# 4. ストレージの選択: xxGB
+# 4. ストレージの選択: volume_type:汎用SSD(gp2) , サイズ:xxGB, IOPS, スループット
 # 5. tag_name
 # 6. セキュリティーグループの選択: type(ssh), port, source
 # 7. 任意、キーペアの作成
@@ -25,12 +25,18 @@ variable "subnet_id" {
 # ========================================================
 # EC2
 # ami選択: Amazon Machine Image  https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
-# instance type 指定 ex)
+# instance type 指定 ex) t2.micro(free)
 # key_name : キーペア
+# EBS ストレージの設定 *1
+# tag_name
+# セキュリティーグループ
+
+# *1 EBS:Elastic Block Store EC2向けに設計,EC2インスタンスにアタッチして使われるAWSのストレージサービス
 # ========================================================
+
 resource "aws_instance" "main" {
   ami = "ami-0f27d081df46f326c"
-  instance_type = "t3.micro"
+  instance_type = "t2.micro"
   key_name = aws_key_pair.main.id
 
   vpc_security_group_ids = [aws_security_group.main.id]
@@ -39,10 +45,10 @@ resource "aws_instance" "main" {
   # EBS最適化
   ebs_optimized = true
 
-  # EBS
+  # EBSの設定
   root_block_device {
     volume_size = 8
-    volume_type = "gp3"
+    volume_type = "gp2"
     iops = 3000
     throughput = 125
     delete_on_termination = true
@@ -56,14 +62,20 @@ resource "aws_instance" "main" {
     Name = var.app_name
   }
 }
-
+# ========================================================
 # SecurityGroup
+# name, description, vpc_id, Rule, egress,
+# terraform での作成の場合、GUIでは自動で設定してくれるアウトバウンドを設定する必要がある(GUIの default は有効)
+# outbound 機器から外部に出力されるパケットをエグレス 上り
+# -1 にすればterraform側で勝手に オールにする https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#egress
+# ========================================================
 resource "aws_security_group" "main" {
   vpc_id = var.vpc_id
 
   name        = "${var.app_name}-ec2"
   description = "${var.app_name}-ec2"
 
+  # アウトバウンド 設定
   egress {
     from_port   = 0
     to_port     = 0
@@ -76,7 +88,7 @@ resource "aws_security_group" "main" {
   }
 }
 
-# SecurityGroupRule
+# SecurityGroupRule SSh
 resource "aws_security_group_rule" "ssh" {
   security_group_id = aws_security_group.main.id
   type              = "ingress"
@@ -86,6 +98,7 @@ resource "aws_security_group_rule" "ssh" {
   protocol          = "tcp"
 }
 
+# SecurityGroupRule http
 resource "aws_security_group_rule" "http" {
   security_group_id = aws_security_group.main.id
   type              = "ingress"
@@ -97,12 +110,11 @@ resource "aws_security_group_rule" "http" {
 
 # SSHKey
 resource "aws_key_pair" "main" {
-#  TODO ハードコーディングどうする?
-  key_name   = "laravel-cms-ec2"
+  key_name   = "sample-ec2-key"
   public_key = file("./ec2/sample-ec2-key.pub")
 }
 
-# EIP
+# EIP (ElasticIP)
 resource "aws_eip" "main" {
   instance = aws_instance.main.id
   vpc      = true
