@@ -72,6 +72,19 @@ resource "aws_subnet" "privates" {
   }
 }
 
+# Subnet
+resource "aws_subnet" "ec2" {
+  cidr_block        = "10.0.100.0/24"
+  availability_zone = "ap-northeast-1a"
+  vpc_id            = aws_vpc.main.id
+
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.app_name}-ec2"
+  }
+}
+
 # ==================================================================
 # IGW (インターネットゲートウェイ)
 # tag_name, vpc選択(Attached)
@@ -109,4 +122,17 @@ resource "aws_route_table_association" "public" {
 
   subnet_id = element(aws_subnet.publics.*.id, count.index)
   route_table_id = aws_route_table.main.id
+}
+
+# ==================================================================
+# EC2作成時に使うVPCのidとSubnet_idを ./main.tf に渡してやる
+#
+# ==================================================================
+
+output "vpc_id" {
+  value = aws_vpc.main.id
+}
+
+output "ec2_subnet_id" {
+  value = aws_subnet.ec2.id
 }
