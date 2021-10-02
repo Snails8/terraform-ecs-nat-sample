@@ -1,11 +1,20 @@
 # sample-terraform
 
 ## 構文
-### sample
+### Module
+Module: リソースを集約して1つの機能としたもの
 
-<h3>Module化</h3>
-・別ディレクトリに格納することができる
-・引数をもたせて渡している
+Moduleには２種類ある
+・Child Module :特定の機能をまとめたもの他mModuleから呼ばれるように設計
+・Root Module  :Terraformコマンドを実行するディレクトリにまとめられたTerraformリソースのこと。childに値を渡したり、呼び出したりする
+
+Module は4つのブロックを Terraform ファイルに定義すること作成できる
+・resource :Moduleが作成するインフラのリソース
+・data     :既存のリソースを参照
+・variable :変数
+・output   :Moduleの値を外に渡す
+
+root
 ```terraform
 module "network" {
 source = "./network"
