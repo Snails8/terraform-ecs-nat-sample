@@ -111,7 +111,7 @@ resource "aws_security_group_rule" "http" {
 # SSHKey
 resource "aws_key_pair" "main" {
   key_name   = "sample-ec2-key"
-  public_key = file("./ec2/sample-ec2-key.pub")
+  public_key = file("var.public_key_path")
 }
 
 # EIP (ElasticIP)
