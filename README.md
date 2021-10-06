@@ -1,5 +1,14 @@
 # sample-terraform
 
+```
+touch ec2/.sample-ec2-key.pub
+
+// 公開鍵情報を記述
+vim ec2/.sample-ec2-key.pub
+```
+
+ssh -i ~/.ssh/キーを指定 ec2-user@IPアドレス
+
 ## 構文
 ### Module
 Module: リソースを集約して1つの機能としたもの
