@@ -108,10 +108,10 @@ resource "aws_security_group_rule" "http" {
   protocol          = "tcp"
 }
 
-# SSHKey
+# SSHKey (ssh-keygen -t rsa で発行したpub-key を指定)
 resource "aws_key_pair" "main" {
   key_name   = "sample-ec2-key"
-  public_key = file("var.public_key_path")
+  public_key = file("./ec2/sample-ec2-key.pub")
 }
 
 # EIP (ElasticIP)
