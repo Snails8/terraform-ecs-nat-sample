@@ -23,6 +23,48 @@ variable "subnet_id" {
 }
 
 # ========================================================
+# AMI 最新のイメージの取得
+#
+# filter で絞っている
+# ========================================================
+data "aws_ami" "recent_amazon_linux2" {
+  most_recent = true
+  owners = ["amazon"]
+
+  filter {
+    name   = "architecture"
+    values = ["x86_64"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name = "name"
+    values = ["amzn2-ami-hvm-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "block-device-mapping.volume-type"
+    values = ["gp2"]
+  }
+
+  filter {
+    name = "state"
+    values = ["available"]
+  }
+
+
+}
+
+# ========================================================
 # EC2
 # ami選択: Amazon Machine Image  https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/finding-an-ami.html
 # instance type 指定 ex) t2.micro(free)
@@ -35,7 +77,7 @@ variable "subnet_id" {
 # ========================================================
 
 resource "aws_instance" "main" {
-  ami = "ami-0f27d081df46f326c"
+  ami = data.aws_ami.recent_amazon_linux2.image_id
   instance_type = "t2.micro"
   key_name = aws_key_pair.main.id
 
@@ -48,7 +90,7 @@ resource "aws_instance" "main" {
   # EBSの設定
   root_block_device {
     volume_size = 8
-    volume_type = "gp2"
+    volume_type = "gp3"
     iops = 3000
     throughput = 125
     delete_on_termination = true
@@ -88,7 +130,7 @@ resource "aws_security_group" "main" {
   }
 }
 
-# SecurityGroupRule SSh
+# SecurityGroupRule SSH
 resource "aws_security_group_rule" "ssh" {
   security_group_id = aws_security_group.main.id
   type              = "ingress"
