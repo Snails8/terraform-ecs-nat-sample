@@ -1,10 +1,25 @@
 # sample-terraform
+## setup
 
 ```
 touch ec2/.sample-ec2-key.pub
 
 // 公開鍵情報を記述
 vim ec2/.sample-ec2-key.pub
+```
+
+```
+$ docker-compose build
+$ docker-compose up -d
+$ docker-compose exec terraform /bin/ash
+```
+
+```
+# terraform init
+# terraform plan
+# terraform apply
+
+# terraform destroy
 ```
 
 ssh -i ~/.ssh/キーを指定 ec2-user@IPアドレス
