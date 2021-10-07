@@ -74,6 +74,7 @@ data "aws_ami" "recent_amazon_linux2" {
 # セキュリティーグループ
 
 # *1 EBS:Elastic Block Store EC2向けに設計,EC2インスタンスにアタッチして使われるAWSのストレージサービス
+# EBS最適化: EC2インスタンスを作成するときは、ebs_optimizedの指定を気にしなくてもよい trueにするとコケる
 # ========================================================
 
 resource "aws_instance" "main" {
@@ -85,7 +86,7 @@ resource "aws_instance" "main" {
   subnet_id = var.subnet_id
 
   # EBS最適化
-  ebs_optimized = true
+  # ebs_optimized = true
 
   # EBSの設定
   root_block_device {
