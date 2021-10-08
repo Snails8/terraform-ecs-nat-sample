@@ -124,6 +124,11 @@ resource "aws_route_table_association" "public" {
   route_table_id = aws_route_table.main.id
 }
 
+# RouteTableAssociation(EC2) EC2 subnet と関連付け
+resource "aws_route_table_association" "ec2" {
+  subnet_id = aws_subnet.ec2.id
+  route_table_id = aws_route_table.main.id
+}
 # ==================================================================
 # EC2作成時に使うVPCのidとSubnet_idを ./main.tf に渡してやる
 #
