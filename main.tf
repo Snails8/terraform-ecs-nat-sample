@@ -28,3 +28,34 @@ module "ec2" {
   vpc_id    = module.network.vpc_id
   subnet_id = module.network.ec2_subnet_id
 }
+
+# ========================================================
+# RDS 作成
+#
+# [subnetGroup, securityGroup, RDS instance(postgreSQL)]
+# ========================================================
+
+variable "DB_NAME" {
+  type = string
+}
+
+variable "DB_MASTER_NAME" {
+  type = string
+}
+
+variable "DB_MASTER_PASS" {
+  type = string
+}
+
+# RDS (PostgreSQL)
+module "rds" {
+  source = "./rds"
+
+  app_name = var.app_name
+  vpc_id   = module.network.vpc_id
+  private_subnet_ids = module.network.private_subnet_ids
+
+  database_username = var.DB_NAME
+  master_username   = var.DB_MASTER_NAME
+  master_password   = var.DB_MASTER_PASS
+}
