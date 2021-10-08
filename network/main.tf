@@ -58,7 +58,7 @@ resource "aws_subnet" "publics" {
   }
 }
 
-# Subnet(Private)
+# Subnet private (RDS で使用)
 resource "aws_subnet" "privates" {
   count = length(var.private_subnet_cidrs)
 
@@ -72,7 +72,7 @@ resource "aws_subnet" "privates" {
   }
 }
 
-# Subnet
+# Subnet (EC2 で使用)
 resource "aws_subnet" "ec2" {
   cidr_block        = "10.0.100.0/24"
   availability_zone = "ap-northeast-1a"
@@ -130,14 +130,20 @@ resource "aws_route_table_association" "ec2" {
   route_table_id = aws_route_table.main.id
 }
 # ==================================================================
-# EC2作成時に使うVPCのidとSubnet_idを ./main.tf に渡してやる
+#  ./main.tf にOutput
 #
 # ==================================================================
-
+# 各種要素で使用
 output "vpc_id" {
   value = aws_vpc.main.id
 }
 
+# EC2 で使用
 output "ec2_subnet_id" {
   value = aws_subnet.ec2.id
+}
+
+# RDS で使用
+output "private_subnet_ids" {
+  value = aws_subnet.privates.*.id
 }
