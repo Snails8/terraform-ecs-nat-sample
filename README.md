@@ -1,30 +1,53 @@
 # sample-terraform
 ## setup
-
-```
-touch ec2/.sample-ec2-key.pub
-
-// 公開鍵情報を記述
-vim ec2/.sample-ec2-key.pub
-```
-
+1. Create terraform environment with docker
 ```
 $ docker-compose build
 $ docker-compose up -d
 $ docker-compose exec terraform /bin/ash
+
+# terraform init 
 ```
 
+2. create required files
+
+
+add .env
 ```
+$ touch cp .env.example .env
+```
+
+add public key file
+```
+$ touch ec2/sample-ec2-key.pub
+
+// put your public key
+$ vim ec2/sample-ec2-key.pub
+```
+
+3. Run terraform 
+```
+$ docker-compose exec terraform /bin/ash 
+
+// 設定を変えた場合、毎回は走らせること
 # terraform init
+
+// 作成予定のプランを表示
 # terraform plan
+
+// 作成
 # terraform apply
 
+・・環境を破棄したい場合(当然すべて壊れるので注意)
 # terraform destroy
 ```
 
-ssh -i ~/.ssh/キーを指定 ec2-user@IPアドレス
+4. how to connect ec2 ?
+```
+$ ssh -i ~/.ssh/秘密鍵 ec2-user@IPアドレス
+```
 
-## 構文
+# 構文
 ### Module
 Module: リソースを集約して1つの機能としたもの
 
