@@ -55,7 +55,7 @@ module "rds" {
   vpc_id   = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
-  database_username = var.DB_NAME
+  database_name = var.DB_NAME
   master_username   = var.DB_MASTER_NAME
   master_password   = var.DB_MASTER_PASS
 }
