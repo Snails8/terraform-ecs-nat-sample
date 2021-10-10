@@ -47,6 +47,18 @@ $ docker-compose exec terraform /bin/ash
 $ ssh -i ~/.ssh/秘密鍵 ec2-user@IPアドレス
 ```
 
+5 create RDS instance 
+please check .env value
+
+```
+https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CreateDBInstance.html
+・1〜16文字の英数字とアンダースコアを含めることができます。
+・その最初の文字は文字でなければなりません。
+・データベースエンジンによって予約された単語にすることはできません。
+
+=> ✕: ハイフン(-), ✕:誰もが使いそうなusername=admin (すでに予約されているため)
+```
+
 # 構文
 ### Module
 Module: リソースを集約して1つの機能としたもの
