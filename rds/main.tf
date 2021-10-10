@@ -86,7 +86,7 @@ resource "aws_db_subnet_group" "main" {
 # 注意: tfstateファイルには生のパスワードが記載されるので。取り扱いには注意
 # =====================================================
 resource "aws_db_instance" "main" {
-  vpc_security_group_ids = [aws_db_instance.main.id]
+  vpc_security_group_ids = [aws_security_group.main.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
 
   engine            = "postgres"
