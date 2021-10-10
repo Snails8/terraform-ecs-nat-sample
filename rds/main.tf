@@ -92,7 +92,7 @@ resource "aws_db_instance" "main" {
   db_subnet_group_name   = aws_db_subnet_group.main.name
 
   engine            = "postgres"
-  engine_version    = "11.12-R1"
+  engine_version    = "11.12"
   instance_class    = "db.t2.micro"
   storage_type      = "gp2"
   allocated_storage = 20
