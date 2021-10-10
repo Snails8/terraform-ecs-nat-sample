@@ -5,7 +5,7 @@ provider "aws" {
 
 variable "app_name" {
   type = string
-  default = "suzuki-test-app"
+  default = "sample"
 }
 
 # AZ の設定(冗長化のため配列でlist化してある)
