@@ -105,8 +105,8 @@ resource "aws_db_instance" "main" {
   username = var.master_username
   password = var.master_password
 
-#  final_snapshot_identifier = local.name  # DBスナップショットの名前
-#  skip_final_snapshot = true  # default はfalse
+  final_snapshot_identifier = local.name  # DBスナップショットの名前
+  skip_final_snapshot = false  # default はfalse
 }
 
 output "endpoint" {
