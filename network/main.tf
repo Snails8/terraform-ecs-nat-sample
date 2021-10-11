@@ -147,3 +147,8 @@ output "ec2_subnet_id" {
 output "private_subnet_ids" {
   value = aws_subnet.privates.*.id
 }
+
+# ECS で使用
+output "public_subnet_ids" {
+  value = aws_subnet.publics.*.id
+}

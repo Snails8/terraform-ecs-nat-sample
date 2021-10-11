@@ -30,6 +30,19 @@ module "ec2" {
 }
 
 # ========================================================
+# ECS 作成
+#
+#
+# ========================================================
+module "ecs" {
+  source = "./ecs"
+  app_name = var.app_name
+  vpc_id   = module.network.vpc_id
+  public_subnet_ids = module.network
+
+}
+
+# ========================================================
 # RDS 作成
 #
 # [subnetGroup, securityGroup, RDS instance(postgreSQL)]
