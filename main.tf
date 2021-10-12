@@ -39,7 +39,6 @@ module "ecs" {
   app_name = var.app_name
   vpc_id   = module.network.vpc_id
   public_subnet_ids = module.network
-
 }
 
 # ========================================================

@@ -22,6 +22,7 @@ locals {
 
 # =========================================================
 # Task Definition
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition
 # =========================================================
 resource "aws_ecs_task_definition" "main" {
   family = var.app_name
@@ -33,11 +34,10 @@ resource "aws_ecs_task_definition" "main" {
   cpu = 256
   memory = 512
 
-  # ECSタスクのネットワークドライバ
-  # Fargateを使用する場合は"awsvpc"決め打ち
+  # ECSタスクのネットワークドライバ  :Fargateを使用する場合は"awsvpc"
   network_mode = "awsvpc"
 
-  # 起動するコンテナの定義
+  # 起動するコンテナの定義 (nginx, app)
   container_definitions = data.template_file.container_definitions.rendered
 
   volume {
