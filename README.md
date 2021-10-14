@@ -59,6 +59,27 @@ https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CreateDBInstance.htm
 => ✕: ハイフン(-), ✕:誰もが使いそうなusername=admin (すでに予約されているため)
 ```
 
+## CI/CD
+It is a CI/CD env that does not directly handle credential information
+Please be careful if you want to use
+```
+En
+・When copying and pasting, pay attention to the repository specification destination (GHA-terraform.yml)
+・Uncomment terraform and workflow in main.tf
+・Set the following 3 environment variables on Github
+
+Jp
+・コピペする場合はリポジトリ指定先に注意(GHA-terraform.yml)
+・main.tf 内の terraform とworkflowのコメントアウトを解除
+・以下３つの環境変数をGithub上にセット
+```
+
+```
+AWS_ROLE_ARN=引き受けるロールのARNを指定。OHA で作成される IAM ロールの ARN
+AWS_WEB_IDENTITY_TOKEN_FILE=Web IDトークンファイルへのパス
+AWS_DEFAULT_REGION=デフォルトのリージョン。東京リージョンを指定したい場合はap-northeast-1
+```
+
 # 構文
 ### Module
 Module: リソースを集約して1つの機能としたもの
