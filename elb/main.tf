@@ -25,8 +25,10 @@ variable "public_subnet_ids" {
 # https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/application/introduction.html
 
 # ALB : Application Load Balancer
+# 公式推奨: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-update-security-groups.html
 # ========================================================================
 
+# TODO::ALB の接続設定をprivateに変更
 resource "aws_lb" "main" {
   load_balancer_type = "application"
   name               = var.app_name
@@ -42,6 +44,7 @@ resource "aws_security_group" "main" {
   description = "${var.app_name}-alb"
   vpc_id      = var.vpc_id
 
+  # アウトバウンド 設定
   egress {
     from_port = 0
     protocol  = "-1"
@@ -54,6 +57,7 @@ resource "aws_security_group" "main" {
   }
 }
 
+# SGR HTTP
 resource "aws_security_group_rule" "http" {
   security_group_id = aws_security_group.main.id
 
@@ -66,6 +70,7 @@ resource "aws_security_group_rule" "http" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
+# 接続リクエストのリスナー設定(HTTP)
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.main.arn
 
