@@ -1,3 +1,20 @@
+# CI/CD で使用 (無駄な使用を避けるためあえてコメントアウトしている)
+#terraform {
+#  backend "s3" {
+#    bucket = "バケット名を指定"
+#    key    = "terraform.tfstate"
+#    region = "ap-northeast-1"
+#
+#  }
+#  required_providers {
+#    aws = {
+#      source  = "hashicorp/aws"
+#      version = "~> 3.27"
+#    }
+#  }
+#  required_version = ">= 0.14.9"
+#}
+
 # provider の設定 ( provider は aws 専用ではなくGCPとかも使える)
 provider "aws" {
   region = "ap-northeast-1"
