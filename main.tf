@@ -65,6 +65,13 @@ module "elb" {
   public_subnet_ids = module.network.public_subnet_ids
 }
 
+# IAM 設定
+# ECS-Agentが使用するIAMロール や タスク(=コンテナ)に付与するIAMロール の定義
+module "iam" {
+  source = "./iam"
+  app_name = var.app_name
+}
+
 # ========================================================
 # RDS 作成
 #
