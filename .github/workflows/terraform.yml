@@ -14,22 +14,42 @@ jobs:
     runs-on: ubuntu-latest
     environment: production
 
+#    参考元にあったがこれ必要?
+#    permissions:
+#      id-token: write
+#      contents: read
+
     # Use the Bash shell regardless whether the GitHub Actions runner is ubuntu-latest, macos-latest, or windows-latest
     defaults:
       run:
         shell: bash
 
     steps:
+    - run: sleep 5
     # Checkout the repository to the GitHub Actions runner
     - name: Checkout
       uses: actions/checkout@v2
-    # Terraform Cloud (default)ではなく、AWS の方を使用
-    - name: configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
+
+    # Terraform Cloud (default)ではなく、AWS の方を使用(credential情報撲滅)
+    - name: Configure AWS
+      run: |
+        export AWS_ROLE_ARN=arn:aws:iam::152231080651:role/ExampleGithubRole
+        export AWS_WEB_IDENTITY_TOKEN_FILE=/tmp/awscreds
+        export AWS_DEFAULT_REGION=ap-northeast-1
+
+        echo AWS_WEB_IDENTITY_TOKEN_FILE=$AWS_WEB_IDENTITY_TOKEN_FILE >> $GITHUB_ENV
+        echo AWS_ROLE_ARN=$AWS_ROLE_ARN >> $GITHUB_ENV
+        echo AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION >> $GITHUB_ENV
+        curl -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=sigstore" | jq -r '.value' > $AWS_WEB_IDENTITY_TOKEN_FILE
+
+    - name: Setup Terraform
+      uses: aws-actions/configure-aws-credentials@master
       with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: ap-northeast-1
+        role-to-assume: "${{ env.AWS_ROLE_ARN }}"
+        web-identity-token-file: "${{ env.AWS_WEB_IDENTITY_TOKEN_FILE }}"
+        aws-region: "${{ env.AWS_DEFAULT_REGION }}"
+        role-duration-seconds: 900
+        role-session-name: GitHubActionsTerraformCICD
 
     - name: Terraform Format
       run: terraform fmt -check
