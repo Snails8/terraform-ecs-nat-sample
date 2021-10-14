@@ -41,6 +41,13 @@ module "ecs" {
   public_subnet_ids = module.network
 }
 
+# cluster 作成
+module "ecs_cluster" {
+  source = "./ecs/cluster"
+  app_name = var.app_name
+}
+
+
 # ========================================================
 # RDS 作成
 #
