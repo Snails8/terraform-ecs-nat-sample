@@ -18,7 +18,7 @@ resource "aws_iam_role" "task_execution" {
 # policy の追加 (Log 関連)
 resource "aws_iam_role_policy" "task_execution" {
   role = aws_iam_role.task_execution.id
-  policy = file("./iam/task_execution_role_policy.json")=
+  policy = file("./iam/task_execution_role_policy.json")
 }
 
 # role にpolicy をattach するときに必要な設定
