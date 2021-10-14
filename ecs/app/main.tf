@@ -7,9 +7,14 @@ variable "vpc_id" {
   type = string
 }
 
-# ec2 -> network_configuration で 使用
+# ecs->network_configuration で 使用
 variable "public_subnet_ids" {
   type = list(string)
+}
+
+# ecs->load_balancer->aws_lb_listener_rule で使用
+variable "http_listener_arn" {
+  type = string
 }
 
 data "aws_region" "current" {}
@@ -95,23 +100,7 @@ resource "aws_ecs_service" "main" {
   }
 }
 
-resource "aws_lb_target_group" "main" {
-  name = var.app_name
-
-  vpc_id = var.vpc_id
-
-  port = 80
-  target_type = "ip"
-  protocol = "HTTP"
-
-  health_check {
-    port = 80
-    path = "/"
-  }
-}
-
-
-# SG
+# Security Group
 resource "aws_security_group" "ecs" {
   name = "${var.app_name}-ecs"
   description = "${var.app_name}-ecs"
@@ -130,7 +119,7 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-# SGR
+# Security Group Rule
 resource "aws_security_group_rule" "ecs" {
   security_group_id = aws_security_group.ecs.id
 
@@ -140,4 +129,34 @@ resource "aws_security_group_rule" "ecs" {
   to_port   = 80
   protocol  = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
+}
+
+resource "aws_lb_target_group" "main" {
+  name = var.app_name
+
+  vpc_id = var.vpc_id
+
+  port = 80
+  target_type = "ip"
+  protocol = "HTTP"
+
+  health_check {
+    port = 80
+    path = "/"
+  }
+}
+
+resource "aws_lb_listener_rule" "main" {
+  listener_arn = var.http_listener_arn
+
+  action {
+    type = "forward"
+    target_group_arn = aws_lb_target_group.main.arn
+  }
+
+  condition {
+    path_pattern {
+      values = ["*"]
+    }
+  }
 }

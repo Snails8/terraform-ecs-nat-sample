@@ -39,6 +39,9 @@ module "ecs" {
   app_name = var.app_name
   vpc_id   = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
+
+  # elb の設定
+  http_listener_arn  = module.elb.http_listener_arn
 }
 
 # cluster 作成
