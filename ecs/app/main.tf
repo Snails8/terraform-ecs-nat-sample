@@ -24,6 +24,19 @@ locals {
 # Task Definition
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition
 # =========================================================
+
+# コンテナ定義を呼び出す
+data "template_file" "container_definitions" {
+  template = file("./ecs/app/container_definitions.json")
+
+  vars = {
+    tag = "latest"
+    name = var.app_name
+    account_id = local.account_id
+    region = local.region
+  }
+}
+
 resource "aws_ecs_task_definition" "main" {
   family = var.app_name
 
@@ -46,20 +59,6 @@ resource "aws_ecs_task_definition" "main" {
 
 #  task_role_arn      = var.iam_role_task_execution_arn
 #  execution_role_arn = var.iam_role_task_execution_arn
-}
-
-# TODO
-data "template_file" "container_definitions" {
-  template = file("./ecs/app/container_definitions.json")
-
-  vars = {
-    tag = "latest"
-
-    name = var.app_name
-
-    account_id = local.account_id
-    region     = local.region
-  }
 }
 
 # ========================================================
