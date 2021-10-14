@@ -50,7 +50,7 @@ resource "aws_ecs_task_definition" "main" {
 
 # TODO
 data "template_file" "container_definitions" {
-  template = file("./ecs_app/container_definitions.json")
+  template = file("./ecs/app/container_definitions.json")
 
   vars = {
     tag = "latest"
