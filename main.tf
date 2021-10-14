@@ -49,6 +49,8 @@ module "ecs" {
 
   # elb の設定
   http_listener_arn  = module.elb.http_listener_arn
+  # ECS のtask に関連付けるIAM の設定
+  iam_role_task_execution_arn = module.iam.iam_role_task_execution_arn
 }
 
 # cluster 作成

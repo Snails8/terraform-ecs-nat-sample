@@ -14,3 +14,8 @@ resource "aws_iam_role" "task_execution" {
   name = "${var.app_name}-TaskExecution"
   assume_role_policy = file(".iam/task_execution_role.json")
 }
+
+# ECS と関連付け
+output "iam_role_task_execution_arn" {
+  value = aws_iam_role.task_execution.arn
+}

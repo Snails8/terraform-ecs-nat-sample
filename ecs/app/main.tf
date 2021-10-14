@@ -25,6 +25,10 @@ locals {
   region = data.aws_region.current.name
 }
 
+# タスクに関連付けるIAM
+variable "iam_role_task_execution_arn" {
+  type = string
+}
 # =========================================================
 # Task Definition
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition
@@ -62,8 +66,8 @@ resource "aws_ecs_task_definition" "main" {
     name = "app-storage"
   }
 
-#  task_role_arn      = var.iam_role_task_execution_arn
-#  execution_role_arn = var.iam_role_task_execution_arn
+  task_role_arn      = var.iam_role_task_execution_arn
+  execution_role_arn = var.iam_role_task_execution_arn
 }
 
 # ========================================================
