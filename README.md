@@ -1,4 +1,5 @@
 # sample-terraform
+![Image](.docs/ECS.drawio.png)
 ## setup
 1. Create terraform environment with docker
 ```
