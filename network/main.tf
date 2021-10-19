@@ -58,7 +58,20 @@ resource "aws_subnet" "publics" {
   }
 }
 
-# Subnet private (RDS で使用)
+# EC2用(踏み台) private subnet
+resource "aws_subnet" "ec2" {
+  cidr_block        = "10.0.100.0/24"
+  availability_zone = "ap-northeast-1a"
+  vpc_id            = aws_vpc.main.id
+
+  map_public_ip_on_launch = true
+
+  tags = {
+    Name = "${var.app_name}-ec2"
+  }
+}
+
+# RDS用 private subnet
 resource "aws_subnet" "privates" {
   count = length(var.private_subnet_cidrs)
 
@@ -69,19 +82,6 @@ resource "aws_subnet" "privates" {
 
   tags = {
     Name = "${var.app_name}-private-${count.index}"
-  }
-}
-
-# Subnet (EC2 で使用)
-resource "aws_subnet" "ec2" {
-  cidr_block        = "10.0.100.0/24"
-  availability_zone = "ap-northeast-1a"
-  vpc_id            = aws_vpc.main.id
-
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.app_name}-ec2"
   }
 }
 
