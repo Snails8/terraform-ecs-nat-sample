@@ -24,6 +24,10 @@ variable "domain" {
   type = string
 }
 
+variable "zone" {
+  type = string
+}
+
 variable "acm_id" {
   type = string
 }
@@ -150,7 +154,7 @@ resource "aws_security_group_rule" "https" {
 # ドメインと紐付け
 # =============================================================
 data "aws_route53_zone" "main" {
-  name         = var.domain
+  name         = var.zone
   private_zone = false
 }
 
@@ -161,7 +165,8 @@ resource "aws_route53_record" "main" {
   name    = var.domain
   zone_id = data.aws_route53_zone.main.id
 
-  alias = {
+  # = は付けない
+  alias {
     name                   = aws_lb.main.dns_name
     zone_id                = aws_lb.main.zone_id
     evaluate_target_health = true
