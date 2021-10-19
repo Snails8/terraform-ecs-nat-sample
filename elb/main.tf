@@ -86,7 +86,26 @@ resource "aws_lb_listener" "http" {
 
   # ALBのarnを指定( arn: Amazon Resource Names の略で、その名の通りリソースを特定するための一意な名前(id))
   load_balancer_arn = aws_lb.main.arn
+  
+  # httpで来たリクエストをhttpsへリダイレクトさせる
+  default_action {
+    type = "redirect"
 
+    redirect {
+      port        = 443
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+}
+# https 
+resource "aws_lb_listener" "https" {
+  port     = 443
+  protocol = "HTTPS"
+
+  certificate_arn = var.acm_id
+
+  load_balancer_arn = aws_lb.main.arn
   # "ok" という固定レスポンスを設定する
   default_action {
     type = "fixed-response"
@@ -123,45 +142,6 @@ resource "aws_security_group_rule" "https" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-# ALB Listener : httpリクエスト受けつけ、そのリクエストをhttpsへリダイレクトさせるルール
-resource "aws_lb_listener" "https" {
-  load_balancer_arn = aws_lb.main.arn
-
-  # TLS 証明書の指定
-  certificate_arn =  var.acm_id
-
-  port     = "443"
-  protocol = "HTTPS"
-
-  # TODO:: fixed_response の指定
-  default_action {
-    type             = "forward"
-    target_group_arn = "${aws_lb_target_group.main.id}"
-  }
-}
-
-# ALB Listener Rule : httpsリクエストを受けつけ、そのリクエストを作成済みのECS(nginx)へ流すルール
-resource "aws_lb_listener_rule" "http_to_https" {
-  listener_arn = "${aws_lb_listener.main.arn}"
-
-  priority = 99
-
-  action {
-    type = "redirect"
-
-    redirect {
-      port        = "443"
-      protocol    = "HTTPS"
-      status_code = "HTTP_301"
-    }
-  }
-
-  condition {
-    field  = "host-header"
-    values = ["${var.domain}"]
-  }
-}
-
 # =============================================================
 # ドメインと紐付け
 # =============================================================
@@ -184,7 +164,8 @@ resource "aws_route53_record" "main" {
   }
 }
 
-# ロードバランサーがリクエストを受け渡すルール
-output "http_listener_arn" {
-  value = aws_lb_listener.http.arn
+# ECSに渡す
+output "https_listener_arn" {
+  value = aws_lb_listener.https.arn
 }
+

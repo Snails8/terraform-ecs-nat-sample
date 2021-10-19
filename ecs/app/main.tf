@@ -13,7 +13,7 @@ variable "public_subnet_ids" {
 }
 
 # ELB の設定 ecs >load_balancer >aws_lb_listener_rule で使用
-variable "http_listener_arn" {
+variable "https_listener_arn" {
   type = string
 }
 
@@ -171,7 +171,7 @@ resource "aws_lb_target_group" "main" {
 
   vpc_id = var.vpc_id
 
-  # ALBからECSタスクのコンテナへトラフィックを振り分ける設定
+  # ALBからECSタスクのコンテナへトラフィックを振り分ける設定(ECS(nginx)へ流す)
   port = 80
   target_type = "ip"
   protocol = "HTTP"
@@ -186,7 +186,7 @@ resource "aws_lb_target_group" "main" {
 # リスナー: ロードバランサがリクエスト受けた際、どのターゲットグループへリクエストを受け渡すのかの設定
 resource "aws_lb_listener_rule" "main" {
   # リスナー(アクセス可能にするALBの設定)の指定
-  listener_arn = var.http_listener_arn
+  listener_arn = var.https_listener_arn
 
   # 受け取ったトラフィックをターゲットグループへ受け渡す
   action {
