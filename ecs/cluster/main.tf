@@ -1,3 +1,7 @@
+# ========================================================
+# ECS Cluster
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster
+# ========================================================
 variable "app_name" {
   type = string
 }

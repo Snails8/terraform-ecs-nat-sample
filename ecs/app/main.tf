@@ -71,13 +71,9 @@ resource "aws_ecs_task_definition" "main" {
 }
 
 # ========================================================
-# ECS Cluster
+# ECS 
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster
 # ========================================================
-resource "aws_ecs_cluster" "main" {
-  name = "handson"
-}
-
 resource "aws_ecs_service" "main" {
   name = var.app_name
 
