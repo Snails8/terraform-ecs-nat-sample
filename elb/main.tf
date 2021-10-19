@@ -153,9 +153,10 @@ resource "aws_security_group_rule" "https" {
 # =============================================================
 # ドメインと紐付け
 # =============================================================
-data "aws_route53_zone" "main" {
+# 開発環境ではホストゾーンを指定するドメインがそもそも存在しないのでresourceで作成している(本来はdata が望ましい。その場合参照方法に注意)
+resource "aws_route53_zone" "main" {
   name         = var.zone
-  private_zone = false
+  # private_zone = false  # resourceだと使用できないので一旦コメントアウト
 }
 
 # Route53 A record  ALBとドメインの紐付け用レコード
@@ -163,7 +164,8 @@ resource "aws_route53_record" "main" {
   type = "A"
 
   name    = var.domain
-  zone_id = data.aws_route53_zone.main.id
+  zone_id = aws_route53_zone.main.id
+  # zone_id = data.aws_route53_zone.main.id
 
   # = は付けない
   alias {
