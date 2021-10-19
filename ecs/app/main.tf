@@ -105,14 +105,15 @@ resource "aws_ecs_task_definition" "main" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster
 # ========================================================
 resource "aws_ecs_service" "main" {
-#  depends_on = [aws_lb_listener_rule.main] TODO::
+  # 依存関係の記述 : aws_lb_listener_rule.main" リソースの作成が完了するのを待ってから当該リソースの作成を開始
+  depends_on = [aws_lb_listener_rule.main]
 
+  # clusterの指定
+  cluster = var.cluster_name
   name = var.app_name
 
   launch_type = "FARGATE"
   platform_version = "1.4.0"
-
-  cluster = var.cluster_name
 
   # task_definition = aws_ecs_task_definition.main.arn
   # GitHubActionsと整合性を取りたい場合は下記のようにrevisionを指定しなければよい
@@ -123,7 +124,7 @@ resource "aws_ecs_service" "main" {
     security_groups = [aws_security_group.ecs.id]
     assign_public_ip = true
   }
-
+  
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
     container_name = "nginx"
@@ -184,7 +185,7 @@ resource "aws_lb_target_group" "main" {
 
 # リスナー: ロードバランサがリクエスト受けた際、どのターゲットグループへリクエストを受け渡すのかの設定
 resource "aws_lb_listener_rule" "main" {
-  # ルールを追加するリスナー
+  # リスナー(アクセス可能にするALBの設定)の指定
   listener_arn = var.http_listener_arn
 
   # 受け取ったトラフィックをターゲットグループへ受け渡す
