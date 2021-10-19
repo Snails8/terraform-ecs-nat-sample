@@ -9,7 +9,7 @@ Description: "IAM Role for GHA"
 Parameters:
   RepoName:
     Type: String
-    Default: Snails8/sample-terraform
+    Default: Snails8/terraform-sample-ecs
 
 Resources:
   Role:
