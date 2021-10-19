@@ -5,7 +5,7 @@
 # 登録されているターゲットの状態をモニタリングし、正常なターゲットにのみトラフィックをルーティング
 # 使用すると負荷分散による障害耐性がつく
 
-# 、Application Load Balancer、Network Load Balancer、Gateway Load Balancer、Classic Load Balancer といったロードバランサーをサポート
+# Application Load Balancer、Network Load Balancer、Gateway Load Balancer、Classic Load Balancer といったロードバランサーをサポート
 # ===========================================================================
 
 variable "app_name" {
@@ -21,7 +21,7 @@ variable "public_subnet_ids" {
 }
 
 # ========================================================================
-# LB
+# ALB 作成
 # https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/application/introduction.html
 
 # ALB : Application Load Balancer
@@ -34,7 +34,6 @@ resource "aws_lb" "main" {
   name               = var.app_name
 
   security_groups = [aws_security_group.main.id]
-  # 対象のsubnet
   subnets = var.public_subnet_ids
 }
 
@@ -44,7 +43,7 @@ resource "aws_security_group" "main" {
   description = "${var.app_name}-alb"
   vpc_id      = var.vpc_id
 
-  # アウトバウンド 設定
+  # セキュリティグループ内のリソースからインターネットへのアクセスを許可する
   egress {
     from_port = 0
     protocol  = "-1"
@@ -61,6 +60,7 @@ resource "aws_security_group" "main" {
 resource "aws_security_group_rule" "http" {
   security_group_id = aws_security_group.main.id
 
+  # セキュリティグループ内のリソースへインターネットからのアクセスを許可する
   type = "ingress"
 
   from_port = 80
@@ -70,13 +70,20 @@ resource "aws_security_group_rule" "http" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
-# 接続リクエストのリスナー設定(HTTP)
+# ============================================================
+# 接続リクエストのLBの設定(リスナーの追加) (HTTP)
+# これがないとALBにアクセスできない 
+# 設定するとDNSにアクセスした際にALBがhttpを受け付けるように
+# ============================================================
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.main.arn
-
+  # HTTPでのアクセスを受け付ける
   port = 80
   protocol = "HTTP"
 
+  # ALBのarnを指定( arn: Amazon Resource Names の略で、その名の通りリソースを特定するための一意な名前(id))
+  load_balancer_arn = aws_lb.main.arn
+
+  # "ok" という固定レスポンスを設定する
   default_action {
     type = "fixed-response"
 

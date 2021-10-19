@@ -161,31 +161,39 @@ resource "aws_security_group_rule" "ecs" {
   protocol  = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
 }
-
-# LB の設定
+# ==========================================================
+# ALB の設定
+# ==========================================================
+# ターゲットグループ: ヘルスチェック(死活監視)を行う
 resource "aws_lb_target_group" "main" {
   name = var.app_name
 
   vpc_id = var.vpc_id
 
+  # ALBからECSタスクのコンテナへトラフィックを振り分ける設定
   port = 80
   target_type = "ip"
   protocol = "HTTP"
 
+  # コンテナへの死活監視設定
   health_check {
     port = 80
     path = "/"
   }
 }
 
+# リスナー: ロードバランサがリクエスト受けた際、どのターゲットグループへリクエストを受け渡すのかの設定
 resource "aws_lb_listener_rule" "main" {
+  # ルールを追加するリスナー
   listener_arn = var.http_listener_arn
 
+  # 受け取ったトラフィックをターゲットグループへ受け渡す
   action {
     type = "forward"
     target_group_arn = aws_lb_target_group.main.arn
   }
-
+  
+  # ターゲットグループへ受け渡すトラフィックの条件
   condition {
     path_pattern {
       values = ["*"]
