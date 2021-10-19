@@ -37,6 +37,12 @@ variable "domain" {
   default = "sample.com"
 }
 
+# acm で使用 (TLS証明書)
+variable "zone" {
+  type = string
+  default = "sample.com"
+}
+
 variable "LOKI_USER" {
   type = string
 }
@@ -78,7 +84,7 @@ module "ecs" {
   vpc_id   = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
 
-  cluster_name = module.ecs.cluster.cluster_name
+  cluster_name = module.ecs_cluster.cluster_name
   # elb の設定
   https_listener_arn  = module.elb.https_listener_arn
   # ECS のtask に関連付けるIAM の設定

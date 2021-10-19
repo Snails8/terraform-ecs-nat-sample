@@ -23,6 +23,10 @@ variable "public_subnet_ids" {
 variable "domain" {
   type = string
 }
+
+variable "acm_id" {
+  type = string
+}
 # ========================================================================
 # ALB 作成
 # https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/application/introduction.html
