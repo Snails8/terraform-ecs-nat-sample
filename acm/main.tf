@@ -43,7 +43,7 @@ resource "aws_acm_certificate" "main" {
 # TLS証明書発行時にドメインの所有を証明するために作成 
 # https://www.terraform.io/docs/providers/aws/r/route53_record.html
 # ===================================================================
-resource "aws_route53_record" "validation" {
+resource "aws_route53_record" "main" {
   depends_on = [aws_acm_certificate.main]
   for_each = {
     for dvo in aws_acm_certificate.main.domain_validation_options : dvo.domain_name => {
