@@ -7,13 +7,27 @@ variable "vpc_id" {
   type = string
 }
 
-# ecs->network_configuration で 使用
+# ecs > network_configuration で 使用
 variable "public_subnet_ids" {
   type = list(string)
 }
 
-# ecs->load_balancer->aws_lb_listener_rule で使用
+# ELB の設定 ecs >load_balancer >aws_lb_listener_rule で使用
 variable "http_listener_arn" {
+  type = string
+}
+
+// Log
+variable "loki_user" {
+  type = string
+}
+
+variable "loki_pass" {
+  type = string
+}
+
+# タスクに関連付けるIAM
+variable "iam_role_task_execution_arn" {
   type = string
 }
 
@@ -21,18 +35,10 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
+  app_name = var.app_name
   account_id = data.aws_caller_identity.current.account_id
   region = data.aws_region.current.name
 }
-
-# タスクに関連付けるIAM
-variable "iam_role_task_execution_arn" {
-  type = string
-}
-# =========================================================
-# Task Definition
-# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_task_definition
-# =========================================================
 
 # コンテナ定義を呼び出す
 data "template_file" "container_definitions" {
@@ -43,9 +49,27 @@ data "template_file" "container_definitions" {
     name = var.app_name
     account_id = local.account_id
     region = local.region
+
+    loki_user = var.loki_user
+    loli_pass = var.loki_pass
   }
 }
 
+# =========================================================
+# CloudWatch Logsの出力先（Log Group）
+#
+# Logの設定自体はjson。あくまでwebとappの出力先を指定
+# =========================================================
+# TODO:: 役割
+resource "aws_cloudwatch_log_group" "main" {
+  name = "/${local.app_name}/ecs"
+  retention_in_days = 7
+}
+
+# =========================================================
+# Task Definition
+#
+# =========================================================
 resource "aws_ecs_task_definition" "main" {
   family = var.app_name
 
@@ -66,6 +90,7 @@ resource "aws_ecs_task_definition" "main" {
     name = "app-storage"
   }
 
+  # 実行するuser の設定
   task_role_arn      = var.iam_role_task_execution_arn
   execution_role_arn = var.iam_role_task_execution_arn
 }
@@ -75,6 +100,8 @@ resource "aws_ecs_task_definition" "main" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster
 # ========================================================
 resource "aws_ecs_service" "main" {
+#  depends_on = [aws_lb_listener_rule.main] TODO::
+
   name = var.app_name
 
   launch_type = "FARGATE"
@@ -82,10 +109,9 @@ resource "aws_ecs_service" "main" {
 
   cluster = "sample"
 
-  task_definition = aws_ecs_task_definition.main.arn
-
+  # task_definition = aws_ecs_task_definition.main.arn
   # GitHubActionsと整合性を取りたい場合は下記のようにrevisionを指定しなければよい
-  # task_definition = "arn:aws:ecs:ap-northeast-1:${local.account_id}:task-definition/${aws_ecs_task_definition.main.family}"
+  task_definition = "arn:aws:ecs:ap-northeast-1:${local.account_id}:task-definition/${aws_ecs_task_definition.main.family}"
 
   network_configuration {
     subnets = var.public_subnet_ids
@@ -131,6 +157,7 @@ resource "aws_security_group_rule" "ecs" {
   cidr_blocks = ["0.0.0.0/0"]
 }
 
+# LB の設定
 resource "aws_lb_target_group" "main" {
   name = var.app_name
 
