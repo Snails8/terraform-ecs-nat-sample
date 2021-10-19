@@ -17,7 +17,12 @@ variable "http_listener_arn" {
   type = string
 }
 
-// Log
+# cluster
+variable "cluster_name" {
+  type = string
+}
+
+#  Log
 variable "loki_user" {
   type = string
 }
@@ -107,7 +112,7 @@ resource "aws_ecs_service" "main" {
   launch_type = "FARGATE"
   platform_version = "1.4.0"
 
-  cluster = "sample"
+  cluster = var.cluster_name
 
   # task_definition = aws_ecs_task_definition.main.arn
   # GitHubActionsと整合性を取りたい場合は下記のようにrevisionを指定しなければよい

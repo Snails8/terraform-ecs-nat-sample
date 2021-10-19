@@ -64,6 +64,7 @@ module "ecs" {
   vpc_id   = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
 
+  cluster_name = module.ecs.cluster.cluster_name
   # elb の設定
   http_listener_arn  = module.elb.http_listener_arn
   # ECS のtask に関連付けるIAM の設定
