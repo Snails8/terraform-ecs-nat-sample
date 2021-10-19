@@ -31,6 +31,12 @@ variable "azs" {
   default = ["ap-northeast-1a", "ap-northeast-1c", "ap-northeast-1d"]
 }
 
+# ELB で使用 https化に使う
+variable "domain" {
+  type = string
+  default = "sample.com"
+}
+
 # ========================================================
 # Network 作成
 #
@@ -73,16 +79,27 @@ module "ecs" {
 
 # cluster 作成
 module "ecs_cluster" {
-  source = "./ecs/cluster"
+  source   = "./ecs/cluster"
   app_name = var.app_name
+}
+
+# ACM 発行
+module "acm" {
+  source   = "./acm"
+  app_name = var.app_name
+  zone     = var.zone
+  domain   = var.domain
 }
 
 # ELB の設定
 module "elb" {
-  source = "./elb"
-  app_name = var.app_name
-  vpc_id = module.network.vpc_id
+  source            = "./elb"
+  app_name          = var.app_name
+  vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
+
+  domain = var.domain
+  acm_id = module.acm.acm_id
 }
 
 # IAM 設定
@@ -91,6 +108,7 @@ module "iam" {
   source = "./iam"
   app_name = var.app_name
 }
+
 
 # ========================================================
 # RDS 作成

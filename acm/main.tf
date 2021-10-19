@@ -75,7 +75,7 @@ resource "aws_acm_certificate_validation" "main" {
 # ==================================================================
 # ドメインの紐付けと、https対応はALBの設定なのでそちらに記載してある
 # ==================================================================
-
+# ALB に渡す
 output "acm_id" {
   value = aws_acm_certificate.main.id
 }

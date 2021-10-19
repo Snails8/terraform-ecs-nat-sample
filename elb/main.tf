@@ -20,6 +20,9 @@ variable "public_subnet_ids" {
   type = list(string)
 }
 
+variable "domain" {
+  type = string
+}
 # ========================================================================
 # ALB 作成
 # https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/application/introduction.html
@@ -72,6 +75,7 @@ resource "aws_security_group_rule" "http" {
 
 # ============================================================
 # 接続リクエストのLBの設定(リスナーの追加) (HTTP)
+# 
 # これがないとALBにアクセスできない 
 # 設定するとDNSにアクセスした際にALBがhttpを受け付けるように
 # ============================================================
@@ -92,6 +96,91 @@ resource "aws_lb_listener" "http" {
       status_code  = "200"
       message_body = "ok"
     }
+  }
+}
+
+# =============================================================
+# https対応
+#
+# 1. Route 53 Aレコード      => ALBとドメインの紐付け用レコード
+# 2. セキュリティグループルール => 作成済みのALB用セキュリティグループへhttpsも受け付けるようルールを追加する
+# 3. ALB httpリスナー        => httpリクエスト受けつけ、そのリクエストをhttpsへリダイレクトさせるルール
+# 4. ALB httpsリスナー       => httpsリクエストを受けつけ、そのリクエストを作成済みのECS(nginx)へ流すルール
+
+# TLS証明書発行に必要な処理などは acm に格納
+# =============================================================
+
+# Security Group Rule  : ALB用セキュリティグループへhttpsも受け付けるようルールを追加する
+resource "aws_security_group_rule" "https" {
+  security_group_id = aws_security_group.main.id
+
+  type = "ingress"
+
+  from_port = 443
+  to_port   = 443
+  protocol  = "tcp"
+
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+# ALB Listener : httpリクエスト受けつけ、そのリクエストをhttpsへリダイレクトさせるルール
+resource "aws_lb_listener" "https" {
+  load_balancer_arn = aws_lb.main.arn
+
+  # TLS 証明書の指定
+  certificate_arn =  var.acm_id
+
+  port     = "443"
+  protocol = "HTTPS"
+
+  # TODO:: fixed_response の指定
+  default_action {
+    type             = "forward"
+    target_group_arn = "${aws_lb_target_group.main.id}"
+  }
+}
+
+# ALB Listener Rule : httpsリクエストを受けつけ、そのリクエストを作成済みのECS(nginx)へ流すルール
+resource "aws_lb_listener_rule" "http_to_https" {
+  listener_arn = "${aws_lb_listener.main.arn}"
+
+  priority = 99
+
+  action {
+    type = "redirect"
+
+    redirect {
+      port        = "443"
+      protocol    = "HTTPS"
+      status_code = "HTTP_301"
+    }
+  }
+
+  condition {
+    field  = "host-header"
+    values = ["${var.domain}"]
+  }
+}
+
+# =============================================================
+# ドメインと紐付け
+# =============================================================
+data "aws_route53_zone" "main" {
+  name         = var.domain
+  private_zone = false
+}
+
+# Route53 A record  ALBとドメインの紐付け用レコード
+resource "aws_route53_record" "main" {
+  type = "A"
+
+  name    = var.domain
+  zone_id = data.aws_route53_zone.main.id
+
+  alias = {
+    name                   = aws_lb.main.dns_name
+    zone_id                = aws_lb.main.zone_id
+    evaluate_target_health = true
   }
 }
 
