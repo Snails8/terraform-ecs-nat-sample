@@ -169,3 +169,13 @@ module "elasticache" {
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 }
+
+# ========================================================
+# SES : Simple Email Service
+# メール送信に使用
+# ========================================================
+module "ses" {
+  source = "./ses"
+  domain = var.domain
+  zone   = var.zone
+}
