@@ -156,7 +156,7 @@ resource "aws_security_group_rule" "https" {
 # 開発環境ではホストゾーンを指定するドメインがそもそも存在しないのでresourceで作成している(本来はdata が望ましい。その場合参照方法に注意)
 resource "aws_route53_zone" "main" {
   name         = var.zone
-  # private_zone = false  # resourceだと使用できないので一旦コメントアウト
+  # private_zone = false  
 }
 
 # Route53 A record  ALBとドメインの紐付け用レコード
