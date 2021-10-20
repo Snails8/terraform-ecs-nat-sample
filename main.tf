@@ -51,6 +51,11 @@ variable "LOKI_PASS" {
   type = string
 }
 
+variable "test_enviroment" {
+  default = true
+  # default = false
+}
+
 # ========================================================
 # Network 作成
 #
@@ -175,6 +180,7 @@ module "elasticache" {
 # メール送信に使用
 # ========================================================
 module "ses" {
+  count  = var.test_enviroment ? 1 : 0
   source = "./ses"
   domain = var.domain
   zone   = var.zone
