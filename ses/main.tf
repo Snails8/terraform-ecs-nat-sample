@@ -1,11 +1,7 @@
+# =================================================
+# route53 zoneに関しては運用時変更してください
 # メール送信に使用
-variable "zone" {
-  type = string
-}
-
-variable "domain" {
-  type = string
-}
+# =================================================
 
 # ドメインと関連するホストゾーンが存在しないのでresource
 resource "aws_route53_zone" "main" {
