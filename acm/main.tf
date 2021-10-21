@@ -9,17 +9,6 @@
 # 
 # 4. ドメインのドメインの紐付けとhttps 対応はALBの設計なので./alb/main.tfに記載
 # ============================================================
-variable "app_name" {
-  type = string
-}
-
-variable "zone" {
-  type = string
-}
-
-variable "domain" {
-  type = string
-}
 
 # 開発環境ではホストゾーンを指定するドメインがそもそも存在しないのでresourceで作成している(本来はdata が望ましい。その場合参照方法に注意)
 resource "aws_route53_zone" "main" {
@@ -72,12 +61,4 @@ resource "aws_acm_certificate_validation" "main" {
   certificate_arn = aws_acm_certificate.main.arn
 
   validation_record_fqdns = [for record in aws_route53_record.main : record.fqdn]
-}
-
-# ==================================================================
-# ドメインの紐付けと、https対応はALBの設定なのでそちらに記載してある
-# ==================================================================
-# ALB に渡す
-output "acm_id" {
-  value = aws_acm_certificate.main.id
 }
