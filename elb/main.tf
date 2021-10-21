@@ -111,7 +111,7 @@ resource "aws_lb_listener" "https" {
   protocol = "HTTPS"
 
   # TSL証明書等を受け取る(処理はacm)
-  certificate_arn   = var.acm_id
+  # certificate_arn   = var.acm_id
   load_balancer_arn = aws_lb.main.arn
   # "ok" という固定レスポンスを設定する
   default_action {

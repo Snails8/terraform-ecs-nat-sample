@@ -71,6 +71,8 @@ module "ecs_cluster" {
 
 # ACM 発行
 module "acm" {
+  count  = var.test_enviroment ? 1 : 0
+
   source   = "./acm"
   app_name = var.app_name
   zone     = var.zone
@@ -86,7 +88,8 @@ module "elb" {
 
   domain = var.domain
   zone   = var.zone
-  acm_id = module.acm.acm_id
+
+  # acm_id = module.acm.acm_id 
 }
 
 # IAM 設定

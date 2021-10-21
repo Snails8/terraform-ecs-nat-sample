@@ -29,6 +29,7 @@ variable "LOKI_PASS" {
   type = string
 }
 
+# 動作検証用の場合true (SES,ACM を作成しない)
 variable "test_enviroment" {
   default = true
   # default = false
