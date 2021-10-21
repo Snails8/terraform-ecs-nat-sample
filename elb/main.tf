@@ -1,42 +1,28 @@
 # ===========================================================================
 # ELB の設定 AWS Elastic Load Balancing
 #
-# 受信したトラフィックを複数のアベイラビリティーゾーンの複数のターゲット (EC2 インスタンス、コンテナ、IP アドレスなど) に自動的に分散
-# 登録されているターゲットの状態をモニタリングし、正常なターゲットにのみトラフィックをルーティング
-# 使用すると負荷分散による障害耐性がつく
+# 1. ALBの作成
+# 1-1. httpとhttpsの通信を受け取れるように
+# 2. 通信を行うためにALBのリスナー設定( http => httpsに流す )
+# 3. ECSのnginxに流してやる(処理の依存関係上ココでは行わないのでoutput)
 
-# Application Load Balancer、Network Load Balancer、Gateway Load Balancer、Classic Load Balancer といったロードバランサーをサポート
+# ACM ECS と依存関係
 # ===========================================================================
 
-variable "app_name" {
-  type = string
+# 開発環境ではホストゾーンを指定するドメインがそもそも存在しないのでresourceで作成している(本来はdata が望ましい。その場合参照方法に注意)
+resource "aws_route53_zone" "main" {
+  name         = var.zone
+  # private_zone = false  
 }
+# data "aws_route53_zone" "main" {
+  # name         = var.zone
+  # private_zone = false  
+# }
 
-variable "vpc_id" {
-  type = string
-}
-
-variable "public_subnet_ids" {
-  type = list(string)
-}
-
-variable "domain" {
-  type = string
-}
-
-variable "zone" {
-  type = string
-}
-
-variable "acm_id" {
-  type = string
-}
 # ========================================================================
-# ALB 作成
+# ALB 作成 (+ subnets , security Group 紐付け)
 # https://docs.aws.amazon.com/ja_jp/elasticloadbalancing/latest/application/introduction.html
-
-# ALB : Application Load Balancer
-# 公式推奨: https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-update-security-groups.html
+# https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-update-security-groups.html
 # ========================================================================
 
 # TODO::ALB の接続設定をprivateに変更
@@ -45,7 +31,7 @@ resource "aws_lb" "main" {
   name               = var.app_name
 
   security_groups = [aws_security_group.main.id]
-  subnets = var.public_subnet_ids
+  subnets         = var.public_subnet_ids
 }
 
 # Security Group
@@ -56,9 +42,9 @@ resource "aws_security_group" "main" {
 
   # セキュリティグループ内のリソースからインターネットへのアクセスを許可する
   egress {
-    from_port = 0
-    protocol  = "-1"
-    to_port   = 0
+    from_port   = 0
+    protocol    = "-1"
+    to_port     = 0
     cidr_blocks = ["0.0.0.0/0"]
   }
 
@@ -67,7 +53,7 @@ resource "aws_security_group" "main" {
   }
 }
 
-# SGR HTTP
+# http通信を受け取れるように
 resource "aws_security_group_rule" "http" {
   security_group_id = aws_security_group.main.id
 
@@ -77,6 +63,19 @@ resource "aws_security_group_rule" "http" {
   from_port = 80
   to_port   = 80
   protocol = "tcp"
+
+  cidr_blocks = ["0.0.0.0/0"]
+}
+
+# ALB用セキュリティグループへhttpsも受け付けるようルールを追加する
+resource "aws_security_group_rule" "https" {
+  security_group_id = aws_security_group.main.id
+
+  type = "ingress"
+
+  from_port = 443
+  to_port   = 443
+  protocol  = "tcp"
 
   cidr_blocks = ["0.0.0.0/0"]
 }
@@ -111,8 +110,8 @@ resource "aws_lb_listener" "https" {
   port     = 443
   protocol = "HTTPS"
 
-  certificate_arn = var.acm_id
-
+  # TSL証明書等を受け取る(処理はacm)
+  certificate_arn   = var.acm_id
   load_balancer_arn = aws_lb.main.arn
   # "ok" という固定レスポンスを設定する
   default_action {
@@ -127,38 +126,8 @@ resource "aws_lb_listener" "https" {
 }
 
 # =============================================================
-# https対応
-#
-# 1. Route 53 Aレコード      => ALBとドメインの紐付け用レコード
-# 2. セキュリティグループルール => 作成済みのALB用セキュリティグループへhttpsも受け付けるようルールを追加する
-# 3. ALB httpリスナー        => httpリクエスト受けつけ、そのリクエストをhttpsへリダイレクトさせるルール
-# 4. ALB httpsリスナー       => httpsリクエストを受けつけ、そのリクエストを作成済みのECS(nginx)へ流すルール
-
-# TLS証明書発行に必要な処理などは acm に格納
+# https対応: ドメインと紐付け
 # =============================================================
-
-# Security Group Rule  : ALB用セキュリティグループへhttpsも受け付けるようルールを追加する
-resource "aws_security_group_rule" "https" {
-  security_group_id = aws_security_group.main.id
-
-  type = "ingress"
-
-  from_port = 443
-  to_port   = 443
-  protocol  = "tcp"
-
-  cidr_blocks = ["0.0.0.0/0"]
-}
-
-# =============================================================
-# ドメインと紐付け
-# =============================================================
-# 開発環境ではホストゾーンを指定するドメインがそもそも存在しないのでresourceで作成している(本来はdata が望ましい。その場合参照方法に注意)
-resource "aws_route53_zone" "main" {
-  name         = var.zone
-  # private_zone = false  
-}
-
 # Route53 A record  ALBとドメインの紐付け用レコード
 resource "aws_route53_record" "main" {
   type = "A"
@@ -174,9 +143,3 @@ resource "aws_route53_record" "main" {
     evaluate_target_health = true
   }
 }
-
-# 処理の依存関係上、ココではなくECSに渡してそこでECSコンテナにトラフィックを割り振る
-output "https_listener_arn" {
-  value = aws_lb_listener.https.arn
-}
-
