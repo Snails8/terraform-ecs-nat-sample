@@ -1,29 +1,5 @@
 # RDS 作成に必要なサービスの用意
 # RDS インスタンス, DB用のセキュリティグループ, DB用のprivate subnet group
-variable "app_name" {
-  type = string
-}
-
-variable "vpc_id" {
-  type = string
-}
-
-variable "private_subnet_ids" {
-  type = list(string)
-}
-
-variable "database_name" {
-  type = string
-}
-
-variable "master_username" {
-  type = string
-}
-
-variable "master_password" {
-  type = string
-}
-
 locals {
   name = "${var.app_name}-pgsql"
 }
@@ -107,8 +83,4 @@ resource "aws_db_instance" "main" {
 
   final_snapshot_identifier = local.name  # DBスナップショットの名前
   skip_final_snapshot = false  # default はfalse
-}
-
-output "endpoint" {
-  value = aws_db_instance.main.endpoint
 }
