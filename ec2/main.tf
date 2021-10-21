@@ -10,22 +10,8 @@
 # 8. ElasticIP(EIP) の用意
 # =======================================================
 
-variable "app_name" {
-  type = string
-}
-
-variable "vpc_id" {
-  type = string
-}
-
-variable "subnet_id" {
-  type = string
-}
-
 # ========================================================
-# AMI 最新のイメージの取得
-#
-# filter で絞っている
+# AMI 最新のイメージの取得 (filter で絞っている
 # ========================================================
 data "aws_ami" "recent_amazon_linux2" {
   most_recent = true
@@ -60,8 +46,6 @@ data "aws_ami" "recent_amazon_linux2" {
     name = "state"
     values = ["available"]
   }
-
-
 }
 
 # ========================================================
