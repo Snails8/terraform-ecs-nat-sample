@@ -1,24 +1,9 @@
 # Network設定(VPC, Subnet, IGW, RouteTable  の設定)
 
-#  親からAZとapp_nameを受け取る
-variable "app_name" {
-  type = string
-}
-
-variable "azs" {
-  type = list(string)
-}
-
 # ==============================================================
 # VPC
 # cidr,tag_name
 # ==============================================================
-
-# VPCのCIDR設定 (default のIPアドレスを設定している)
-variable "vpc_cidr" {
-  default = "10.0.0.0/16"
-}
-
 # VPC 作成(最低限: sidr とtag )
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
@@ -30,20 +15,10 @@ resource "aws_vpc" "main" {
     Name = var.app_name
   }
 }
-
 #================================================================
 # Subnet
 # VPC選択, name, AZ, cidr
 #================================================================
-
-variable "public_subnet_cidrs" {
-  default = ["10.0.0.0/24", "10.0.1.0/24", "10.0.2.0/24"]
-}
-
-variable "private_subnet_cidrs" {
-  default = ["10.0.10.0/24", "10.0.11.0/24", "10.0.12.0/24"]
-}
-
 # Subnets(Public)
 resource "aws_subnet" "publics" {
   count = length(var.public_subnet_cidrs)
@@ -128,27 +103,4 @@ resource "aws_route_table_association" "public" {
 resource "aws_route_table_association" "ec2" {
   subnet_id = aws_subnet.ec2.id
   route_table_id = aws_route_table.main.id
-}
-# ==================================================================
-#  ./main.tf にOutput
-#
-# ==================================================================
-# 各種要素で使用
-output "vpc_id" {
-  value = aws_vpc.main.id
-}
-
-# EC2 で使用
-output "ec2_subnet_id" {
-  value = aws_subnet.ec2.id
-}
-
-# RDS で使用
-output "private_subnet_ids" {
-  value = aws_subnet.privates.*.id
-}
-
-# ECS で使用
-output "public_subnet_ids" {
-  value = aws_subnet.publics.*.id
 }
