@@ -81,6 +81,13 @@ AWS_WEB_IDENTITY_TOKEN_FILE=Web IDトークンファイルへのパス
 AWS_DEFAULT_REGION=デフォルトのリージョン。東京リージョンを指定したい場合はap-northeast-1
 ```
 
+## 運用 注意
+・aws_route53_zone のもたせ方を変更してください(SES, ELB, ACM)
+　・本来 data で定義するのですが、ドメインがそもそも存在しないのでresourceで作成しています。
+　・本来ドメインを取得してから実行するような設定なので、当然main.tfのドメイン名も修正して運用してください
+
+## ディレクトリ構造
+
 # 構文
 ### Module
 Module: リソースを集約して1つの機能としたもの
