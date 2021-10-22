@@ -19,6 +19,6 @@ variable "zone" {
 }
 
 # listener rule httpsで使用
-# variable "acm_id" {
-#   type = string
-# }
+variable "acm_id" {
+  type = string
+}

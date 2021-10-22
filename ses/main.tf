@@ -4,15 +4,10 @@
 # =================================================
 
 # ドメインと関連するホストゾーンが存在しないのでresource
-resource "aws_route53_zone" "main" {
+data "aws_route53_zone" "main" {
   name         = var.zone
-  # private_zone = false
+  private_zone = false
 }
-
-# data "aws_route53_zone" "main" {
-#   name         = var.zone
-#   private_zone = false
-# }
 
 # SESドメインIDリソースの提供
 resource "aws_ses_domain_identity" "ses" {
@@ -43,8 +38,7 @@ resource "aws_ses_domain_dkim" "dkim" {
 #  SESドメインDKIMのレコードリソースの作成
 resource "aws_route53_record" "dkim_record" {
   count   = 3
-  # zone_id = data.aws_route53_zone.main.id
-  zone_id = aws_route53_zone.main.id
+  zone_id = data.aws_route53_zone.main.id
   name    = "${element(aws_ses_domain_dkim.dkim.dkim_tokens, count.index)}._domainkey.${var.domain}"
   type    = "CNAME"
   ttl     = "600"

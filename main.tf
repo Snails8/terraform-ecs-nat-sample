@@ -89,7 +89,7 @@ module "elb" {
   domain = var.domain
   zone   = var.zone
 
-  # acm_id = module.acm.acm_id 
+  acm_id = module.acm.acm_id 
 }
 
 # IAM 設定
@@ -98,7 +98,6 @@ module "iam" {
   source = "./iam"
   app_name = var.app_name
 }
-
 
 # ========================================================
 # RDS 作成

@@ -10,14 +10,10 @@
 # ===========================================================================
 
 # 開発環境ではホストゾーンを指定するドメインがそもそも存在しないのでresourceで作成している(本来はdata が望ましい。その場合参照方法に注意)
-resource "aws_route53_zone" "main" {
+data "aws_route53_zone" "main" {
   name         = var.zone
-  # private_zone = false  
+  private_zone = false  
 }
-# data "aws_route53_zone" "main" {
-  # name         = var.zone
-  # private_zone = false  
-# }
 
 # ========================================================================
 # ALB 作成 (+ subnets , security Group 紐付け)
@@ -111,7 +107,7 @@ resource "aws_lb_listener" "https" {
   protocol = "HTTPS"
 
   # TSL証明書等を受け取る(処理はacm)
-  # certificate_arn   = var.acm_id
+  certificate_arn   = var.acm_id
   load_balancer_arn = aws_lb.main.arn
   # "ok" という固定レスポンスを設定する
   default_action {
@@ -133,8 +129,7 @@ resource "aws_route53_record" "main" {
   type = "A"
 
   name    = var.domain
-  zone_id = aws_route53_zone.main.id
-  # zone_id = data.aws_route53_zone.main.id
+  zone_id = data.aws_route53_zone.main.id
 
   # = は付けない
   alias {
