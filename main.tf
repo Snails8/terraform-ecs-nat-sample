@@ -71,8 +71,6 @@ module "ecs_cluster" {
 
 # ACM 発行
 module "acm" {
-  count  = var.test_enviroment ? 1 : 0
-
   source   = "./acm"
   app_name = var.app_name
   zone     = var.zone
@@ -88,7 +86,6 @@ module "elb" {
 
   domain = var.domain
   zone   = var.zone
-
   acm_id = module.acm.acm_id 
 }
 
@@ -133,7 +130,6 @@ module "elasticache" {
 # メール送信に使用
 # ========================================================
 module "ses" {
-  count  = var.test_enviroment ? 1 : 0
   source = "./ses"
   domain = var.domain
   zone   = var.zone
