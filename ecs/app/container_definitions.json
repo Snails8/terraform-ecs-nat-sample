@@ -44,7 +44,7 @@
     "environment": [
       {
         "name": "APP_KEY",
-        "value": "hogefugapiyo"
+        "value": "${app_key}"
       },
       {
         "name": "APP_ENV",

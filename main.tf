@@ -58,6 +58,7 @@ module "ecs" {
   https_listener_arn  = module.elb.https_listener_arn
   # ECS のtask に関連付けるIAM の設定
   iam_role_task_execution_arn = module.iam.iam_role_task_execution_arn
+  app_key = var.APP_KEY
 
   loki_user = var.LOKI_USER
   loki_pass = var.LOKI_PASS

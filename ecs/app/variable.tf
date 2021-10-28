@@ -16,6 +16,11 @@ variable "https_listener_arn" {
   type = string
 }
 
+# container definition で使用
+variable "app_key" {
+  type = string
+}
+
 # cluster
 variable "cluster_name" {
   type = string

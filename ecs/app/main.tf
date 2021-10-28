@@ -2,9 +2,9 @@ data "aws_region" "current" {}
 data "aws_caller_identity" "current" {}
 
 locals {
-  app_name = var.app_name
+  app_name   = var.app_name
   account_id = data.aws_caller_identity.current.account_id
-  region = data.aws_region.current.name
+  region     = data.aws_region.current.name
 }
 
 # コンテナ定義を呼び出す
@@ -12,13 +12,13 @@ data "template_file" "container_definitions" {
   template = file("./ecs/app/container_definitions.json")
 
   vars = {
-    tag = "latest"
-    name = var.app_name
+    tag        = "latest"
+    name       = var.app_name
     account_id = local.account_id
-    region = local.region
-
-    loki_user = var.loki_user
-    loki_pass = var.loki_pass
+    region     = local.region
+    app_key    = var.app_key
+    loki_user  = var.loki_user
+    loki_pass  = var.loki_pass
   }
 }
 
@@ -30,9 +30,8 @@ resource "aws_ecs_task_definition" "main" {
 
   # データプレーンの選択
   requires_compatibilities = ["FARGATE"]
-  # ECSタスクが使用可能なリソースの上限
-  # タスク内のコンテナはこの上限内に使用するリソースを収める必要があり、メモリが上限に達した場合OOM Killer にタスクがキルされる
-  cpu = 256
+  # ECSタスクが使用可能なリソースの上限 (タスク内のコンテナはこの上限内に使用するリソースを収める必要があり、メモリが上限に達した場合OOM Killer にタスクがキルされる
+  cpu    = 256
   memory = 512
 
   # ECSタスクのネットワークドライバ  :Fargateを使用する場合は"awsvpc"
@@ -60,9 +59,9 @@ resource "aws_ecs_service" "main" {
 
   # clusterの指定
   cluster = var.cluster_name
-  name = var.app_name
+  name    = var.app_name
 
-  launch_type = "FARGATE"
+  launch_type      = "FARGATE"
   platform_version = "1.4.0"
 
   # task_definition = aws_ecs_task_definition.main.arn
@@ -70,15 +69,15 @@ resource "aws_ecs_service" "main" {
   task_definition = "arn:aws:ecs:ap-northeast-1:${local.account_id}:task-definition/${aws_ecs_task_definition.main.family}"
 
   network_configuration {
-    subnets = var.public_subnet_ids
+    subnets         = var.public_subnet_ids
     security_groups = [aws_security_group.ecs.id]
     assign_public_ip = true
   }
   
   load_balancer {
     target_group_arn = aws_lb_target_group.main.arn
-    container_name = "nginx"
-    container_port = 80
+    container_name   = "nginx"
+    container_port   = 80
   }
 }
 

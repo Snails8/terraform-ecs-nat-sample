@@ -21,6 +21,10 @@ variable "zone" {
   default = "snails8.site"
 }
 
+variable "APP_KEY" {
+  type = string
+}
+
 variable "LOKI_USER" {
   type = string
 }
