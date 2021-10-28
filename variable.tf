@@ -12,13 +12,13 @@ variable "azs" {
 # ELB で使用 https化に使う
 variable "domain" {
   type = string
-  default = "sample.com"
+  default = "snails8.site"
 }
 
 # acm で使用 (TLS証明書)
 variable "zone" {
   type = string
-  default = "sample.com"
+  default = "snails8.site"
 }
 
 variable "LOKI_USER" {
