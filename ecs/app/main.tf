@@ -64,6 +64,9 @@ resource "aws_ecs_service" "main" {
   launch_type      = "FARGATE"
   platform_version = "1.4.0"
 
+  # 以下の値を task の数を設定しないと、serviceの内のタスクが0になり動作しない。
+  desired_count = 1
+
   # task_definition = aws_ecs_task_definition.main.arn
   # GitHubActionsと整合性を取りたい場合は下記のようにrevisionを指定しなければよい
   task_definition = "arn:aws:ecs:ap-northeast-1:${local.account_id}:task-definition/${aws_ecs_task_definition.main.family}"
@@ -154,7 +157,7 @@ resource "aws_lb_listener_rule" "main" {
     type = "forward"
     target_group_arn = aws_lb_target_group.main.arn
   }
-  
+
   # ターゲットグループへ受け渡すトラフィックの条件
   condition {
     path_pattern {
