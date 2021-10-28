@@ -16,8 +16,7 @@ resource "aws_ses_domain_identity" "ses" {
 
 # SES電子メールIDリソースを提供
 resource "aws_route53_record" "ses_record" {
-  # zone_id = data.aws_route53_zone.main.id
-  zone_id = aws_route53_zone.main.id
+  zone_id = data.aws_route53_zone.main.id
   name    = "_amazonses.${var.domain}"
   type    = "TXT"
   ttl     = "600"
