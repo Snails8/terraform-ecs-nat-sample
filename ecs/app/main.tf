@@ -18,22 +18,12 @@ data "template_file" "container_definitions" {
     region = local.region
 
     loki_user = var.loki_user
-    loli_pass = var.loki_pass
+    loki_pass = var.loki_pass
   }
-}
-# =========================================================
-# CloudWatch Logsの出力先（Log Group）
-#
-# Logの設定自体はjson。あくまでwebとappの出力先を指定
-# =========================================================
-resource "aws_cloudwatch_log_group" "main" {
-  name = "/${local.app_name}/ecs"
-  retention_in_days = 7
 }
 
 # =========================================================
 # Task Definition
-#
 # =========================================================
 resource "aws_ecs_task_definition" "main" {
   family = var.app_name
@@ -122,6 +112,18 @@ resource "aws_security_group_rule" "ecs" {
   protocol  = "tcp"
   cidr_blocks = ["0.0.0.0/0"]
 }
+
+# =========================================================
+# CloudWatch Logsの出力先（Log Group）
+#
+# Logの設定自体はjson。あくまでwebとappの出力先を指定
+# =========================================================
+resource "aws_cloudwatch_log_group" "main" {
+  name = "/${local.app_name}/ecs"
+  retention_in_days = 7
+}
+
+
 # ==========================================================
 # ALB の設定
 # ==========================================================
