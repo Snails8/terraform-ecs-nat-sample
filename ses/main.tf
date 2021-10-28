@@ -20,7 +20,7 @@ resource "aws_route53_record" "ses_record" {
   name    = "_amazonses.${var.domain}"
   type    = "TXT"
   ttl     = "600"
-  records = ["${aws_ses_domain_identity.ses.verification_token}"]
+  records = aws_ses_domain_identity.ses.verification_token
 }
 
 # SESドメインIDの検証が成功したことを表わす
