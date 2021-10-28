@@ -2,6 +2,6 @@
 # ドメインの紐付けと、https対応はALBの設定なのでそちらに記載してある
 # ==================================================================
 # ELB に渡す
-output "acm_id" {
-  value = aws_acm_certificate.main.id
-}
+# output "acm_id" {
+#   value = aws_acm_certificate.main.id
+# }
