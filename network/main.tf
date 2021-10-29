@@ -114,31 +114,26 @@ resource "aws_route_table_association" "ec2" {
 
 # EIP (ElasticIP)
 resource "aws_eip" "nat" {
-  instance = aws_instance.main.id
-  vpc      = true
+  vpc = true
 
   tags = {
-    Name = var.app_name
+    Name = "${var.app_name}-nat-eip"
   }
 }
 
-# NAT gateway
+# NAT gateway  (1 NAT 1 EIP が必要)
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.publics.*.id
 
   tags = {
-    Name = "sample-nat-gateway"
+    Name = "${var.app_name}-nat"
   }
 
   depends_on = [aws_internet_gateway.main]
 }
 
-# TODO:: ECS のEipは？どれあとこれでokなの？
-# 1 NAT 1 EIP が必要
-# private 用の route-table が別途必要
-
-# NAT => private に流す設定
+# NAT => private に流す設定 ( private 用の route-table が別途必要
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 }
