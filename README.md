@@ -3,61 +3,53 @@
 ## setup
 1. Create terraform environment with docker
 ```
-$ docker-compose build
+// set your credential keys in .env
+$ touch cp .env.example .env
+
+// set your public key
+$ touch ec2/sample-ec2-key.pub
+$ vim ec2/sample-ec2-key.pub
+
+```
+
+2. Run terraform
+```
 $ docker-compose up -d
 $ docker-compose exec terraform /bin/ash
 
+設定を変えた場合、毎回は走らせること
 # terraform init 
-```
 
-2. create required files
-
-
-add .env
-```
-$ touch cp .env.example .env
-```
-
-add public key file
-```
-$ touch ec2/sample-ec2-key.pub
-
-// put your public key
-$ vim ec2/sample-ec2-key.pub
-```
-
-3. Run terraform 
-```
-$ docker-compose exec terraform /bin/ash 
-
-// 設定を変えた場合、毎回は走らせること
-# terraform init
-
-// 作成予定のプランを表示
+// 	initialization (if you change a file , please run)
 # terraform plan
 
-// 作成
+// create aws resources 
 # terraform apply
 
-・・環境を破棄したい場合(当然すべて壊れるので注意)
+// destroy 
 # terraform destroy
 ```
 
-4. how to connect ec2 ?
+3. ECR
+```
+$ aws ecr create-repository --repository-name sample-app
+$ aws ecr create-repository --repository-name sample-nginx
+```
+4. 
+Q  how to connect ec2 ?
 ```
 $ ssh -i ~/.ssh/秘密鍵 ec2-user@IPアドレス
 ```
 
-5 create RDS instance 
+Q.  RDS instance failed to create 
 please check .env value
-
 ```
 https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_CreateDBInstance.html
 ・1〜16文字の英数字とアンダースコアを含めることができます。
 ・その最初の文字は文字でなければなりません。
 ・データベースエンジンによって予約された単語にすることはできません。
 
-=> ✕: ハイフン(-), ✕:誰もが使いそうなusername=admin (すでに予約されているため)
+✕: ハイフン(-), ✕:誰もが使いそうなusername=admin (すでに予約されているため)
 ```
 
 ## CI/CD
@@ -87,9 +79,27 @@ AWS_DEFAULT_REGION=デフォルトのリージョン。東京リージョンを�
 開発用と本番用で分けたい場合は
 variable_des.tf のように分けて運用してください
 
+## 懸念点
+github-actionsでアプリケーションのdeployをしているため、task-definition が二重管理になってしまっている。
+
+外部デプロイを利用すれば回避できるが以下の問題がある
+- https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/userguide/deployment-type-external.html
+
+対応策
+
+・AWS Copilot を使用
+https://docs.aws.amazon.com/ja_jp/AmazonECS/latest/userguide/getting-started-aws-copilot-cli.html
+
+・パイプラインの使用
+https://zenn.dev/reireias/articles/8e987af2762eaa
+
+理想
+github-actions にCodePipelineをかませる
+
+
 ## ディレクトリ構造
 
-# 構文
+## 構文
 ### Module
 Module: リソースを集約して1つの機能としたもの
 
@@ -102,37 +112,6 @@ Module は4つのブロックを Terraform ファイルに定義すること作�
 ・data     :既存のリソースを参照
 ・variable :変数
 ・output   :Moduleの値を外に渡す
-
-root
-```terraform
-module "network" {
-source = "./network"
-app_name = var.app_name
-azs = var.azs
-}
-```
-
-子側では受け取れば良い
-```terraform
-#  親からAZとapp_nameを受け取る
-variable "app_name" {
-  type = string
-}
-
-variable "azs" {
-  type = list(string)
-}
-
-// 略
-```
-###  親からAZとapp_nameを受け取る
-variable "app_name" {
-type = string
-}
-
-variable "azs" {
-type = list(string)
-}
 
 ### locals 値の使用 
 https://www.terraform.io/docs/language/values/locals.html
