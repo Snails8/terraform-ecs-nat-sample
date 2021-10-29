@@ -71,7 +71,6 @@ resource "aws_ecs_service" "main" {
   # GitHubActionsと整合性を取りたい場合は下記のようにrevisionを指定しなければよい
   task_definition = "arn:aws:ecs:ap-northeast-1:${local.account_id}:task-definition/${aws_ecs_task_definition.main.family}"
 
-#  TODO::security group public と同じようにそのままでええのか？
   network_configuration {
     subnets         = var.private_subnet_ids
     security_groups = [aws_security_group.ecs.id]
@@ -92,6 +91,7 @@ resource "aws_security_group" "ecs" {
 
   vpc_id = var.vpc_id
 
+  # セキュリティグループ内のリソースからインターネットへのアクセス許可設定(docker-hubのpullに使用
   egress {
     from_port   = 0
     to_port     = 0
@@ -104,7 +104,7 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-# Security Group Rule(ingress)
+# Security Group Rule(ingress: インターネットからセキュリティグループ内のリソースへのアクセス許可設定)
 resource "aws_security_group_rule" "ecs" {
   security_group_id = aws_security_group.ecs.id
 
@@ -113,7 +113,8 @@ resource "aws_security_group_rule" "ecs" {
   from_port = 80
   to_port   = 80
   protocol  = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+  # 同一VPC内からのアクセスのみ許可
+  cidr_blocks = ["0.0.0.0/16"]
 }
 
 # =========================================================
