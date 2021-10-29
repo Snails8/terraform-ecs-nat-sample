@@ -104,3 +104,36 @@ resource "aws_route_table_association" "ec2" {
   subnet_id = aws_subnet.ec2.id
   route_table_id = aws_route_table.main.id
 }
+
+# ==================================================================
+# NAT gate way
+# インターネットからprivate には直接通信ができないため
+# https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/nat_gateway
+# ==================================================================
+
+# TODO:: ECS のEipは？どれあとこれでokなの？
+resource "aws_nat_gateway" "main" {
+  allocation_id = aws_eip.main.id
+  subnet_id     = aws_subnet.publics.*.id
+
+  tags = {
+    Name = "gw NAT"
+  }
+
+  depends_on = [aws_internet_gateway.main]
+}
+
+# Route  :RouteTable に IGW へのルートを指定してあげる
+resource "aws_route" "private" {
+  route_table_id = aws_route_table.private
+  aws_nat_gateway_id = aws_nat_gateway.main.id
+}
+
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
+}
+
+resource "aws_route_table_association" "private_0" {
+  subnet_id      = aws_subnet.private.id
+  route_table_id = aws_route_table.private.id
+}
