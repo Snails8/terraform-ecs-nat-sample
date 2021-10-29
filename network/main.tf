@@ -122,9 +122,10 @@ resource "aws_eip" "nat" {
 }
 
 # NAT gateway  (1 NAT 1 EIP が必要)
+# TODO:: NAT 1つ運用なので要見直し
 resource "aws_nat_gateway" "main" {
   allocation_id = aws_eip.nat.id
-  subnet_id     = aws_subnet.publics.*.id
+  subnet_id     = aws_subnet.publics[1].id
 
   tags = {
     Name = "${var.app_name}-nat"
@@ -141,8 +142,8 @@ resource "aws_route_table" "private" {
 # Route  : RouteTable に NAT へのルートを指定してあげる
 resource "aws_route" "private" {
   destination_cidr_block = "0.0.0.0/0"
-  route_table_id = aws_route_table.private
-  aws_nat_gateway_id = aws_nat_gateway.main.id
+  route_table_id = aws_route_table.private.id
+  nat_gateway_id = aws_nat_gateway.main.id
 }
 
 # RouteTableAssociation(Public)  :RouteTable にsubnet を関連付け
