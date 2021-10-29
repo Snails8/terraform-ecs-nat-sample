@@ -6,8 +6,8 @@ variable "vpc_id" {
   type = string
 }
 
-# ecs > network_configuration で 使用
-variable "public_subnet_ids" {
+# ecs  で 使用
+variable "private_subnet_ids" {
   type = list(string)
 }
 

@@ -71,8 +71,9 @@ resource "aws_ecs_service" "main" {
   # GitHubActionsと整合性を取りたい場合は下記のようにrevisionを指定しなければよい
   task_definition = "arn:aws:ecs:ap-northeast-1:${local.account_id}:task-definition/${aws_ecs_task_definition.main.family}"
 
+#  TODO::security group public と同じようにそのままでええのか？
   network_configuration {
-    subnets         = var.public_subnet_ids
+    subnets         = var.private_subnet_ids
     security_groups = [aws_security_group.ecs.id]
     assign_public_ip = true
   }
@@ -103,7 +104,7 @@ resource "aws_security_group" "ecs" {
   }
 }
 
-# Security Group Rule
+# Security Group Rule(ingress)
 resource "aws_security_group_rule" "ecs" {
   security_group_id = aws_security_group.ecs.id
 
