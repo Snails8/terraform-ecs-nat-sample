@@ -8,5 +8,7 @@
 *.tfstate
 *.tfstate.backup
 
+.terraform.tfstate.lock.info
+
 # EC2 ssh-key
 ec2/sample-ec2-key.pub
