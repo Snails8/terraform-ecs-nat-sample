@@ -4,12 +4,10 @@
 1. Create terraform environment with docker
 ```
 // set your credential keys in .env
-$ touch cp .env.example .env
+$ cp .env.example .env
 
 // set your public key
-$ touch ec2/sample-ec2-key.pub
 $ vim ec2/sample-ec2-key.pub
-
 ```
 
 2. Run terraform
