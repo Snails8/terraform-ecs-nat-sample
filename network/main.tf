@@ -75,8 +75,9 @@ resource "aws_internet_gateway" "main" {
 # ==================================================================
 # RouteTable
 # VPC作成時に自動生成される項目
+# IGW => public に流す設定
 # ==================================================================
-resource "aws_route_table" "main" {
+resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = {
@@ -85,9 +86,9 @@ resource "aws_route_table" "main" {
 }
 
 # Route  :RouteTable に IGW へのルートを指定してあげる
-resource "aws_route" "main" {
+resource "aws_route" "public" {
   destination_cidr_block = "0.0.0.0/0"
-  route_table_id = aws_route_table.main.id
+  route_table_id = aws_route_table.public.id
   gateway_id = aws_internet_gateway.main.id
 }
 
@@ -96,13 +97,13 @@ resource "aws_route_table_association" "public" {
   count = length(var.public_subnet_cidrs)
 
   subnet_id = element(aws_subnet.publics.*.id, count.index)
-  route_table_id = aws_route_table.main.id
+  route_table_id = aws_route_table.public.id
 }
 
 # RouteTableAssociation(EC2) EC2 subnet と関連付け
 resource "aws_route_table_association" "ec2" {
   subnet_id = aws_subnet.ec2.id
-  route_table_id = aws_route_table.main.id
+  route_table_id = aws_route_table.public.id
 }
 
 # ==================================================================
@@ -111,29 +112,48 @@ resource "aws_route_table_association" "ec2" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/nat_gateway
 # ==================================================================
 
-# TODO:: ECS のEipは？どれあとこれでokなの？
+# EIP (ElasticIP)
+resource "aws_eip" "nat" {
+  instance = aws_instance.main.id
+  vpc      = true
+
+  tags = {
+    Name = var.app_name
+  }
+}
+
+# NAT gateway
 resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.main.id
+  allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.publics.*.id
 
   tags = {
-    Name = "gw NAT"
+    Name = "sample-nat-gateway"
   }
 
   depends_on = [aws_internet_gateway.main]
 }
 
-# Route  :RouteTable に IGW へのルートを指定してあげる
-resource "aws_route" "private" {
-  route_table_id = aws_route_table.private
-  aws_nat_gateway_id = aws_nat_gateway.main.id
-}
+# TODO:: ECS のEipは？どれあとこれでokなの？
+# 1 NAT 1 EIP が必要
+# private 用の route-table が別途必要
 
+# NAT => private に流す設定
 resource "aws_route_table" "private" {
   vpc_id = aws_vpc.main.id
 }
 
-resource "aws_route_table_association" "private_0" {
-  subnet_id      = aws_subnet.private.id
+# Route  : RouteTable に NAT へのルートを指定してあげる
+resource "aws_route" "private" {
+  destination_cidr_block = "0.0.0.0/0"
+  route_table_id = aws_route_table.private
+  aws_nat_gateway_id = aws_nat_gateway.main.id
+}
+
+# RouteTableAssociation(Public)  :RouteTable にsubnet を関連付け
+resource "aws_route_table_association" "private" {
+  count = length(var.private_subnet_cidrs)
+
+  subnet_id = element(aws_subnet.privates.*.id, count.index)
   route_table_id = aws_route_table.private.id
 }
