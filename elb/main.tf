@@ -21,7 +21,7 @@ data "aws_route53_zone" "main" {
 # https://docs.aws.amazon.com/elasticloadbalancing/latest/application/load-balancer-update-security-groups.html
 # ========================================================================
 
-# TODO::ALB の接続設定をprivateに変更
+# ALB ( public に配置
 resource "aws_lb" "main" {
   load_balancer_type = "application"
   name               = var.app_name
