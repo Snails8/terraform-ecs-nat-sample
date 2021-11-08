@@ -81,7 +81,7 @@ resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
   tags = {
-    Name = var.app_name
+    Name = "${var.app_name}-route_table"
   }
 }
 
@@ -155,14 +155,14 @@ resource "aws_nat_gateway" "main_2" {
 }
 
 # Route  : RouteTable に NAT_1 へのルートを指定してあげる
-resource "aws_route" "private" {
+resource "aws_route" "private_1" {
   destination_cidr_block = "0.0.0.0/0"
   route_table_id = aws_route_table.private.id
   nat_gateway_id = aws_nat_gateway.main_1.id
 }
 
 # Route  : RouteTable に NAT_2 へのルートを指定してあげる
-resource "aws_route" "private" {
+resource "aws_route" "private_2" {
   destination_cidr_block = "0.0.0.0/0"
   route_table_id = aws_route_table.private.id
   nat_gateway_id = aws_nat_gateway.main_2.id
