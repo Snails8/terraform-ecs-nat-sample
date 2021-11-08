@@ -113,37 +113,64 @@ resource "aws_route_table_association" "ec2" {
 # ==================================================================
 
 # EIP (ElasticIP)
-resource "aws_eip" "nat" {
+resource "aws_eip" "nat_1" {
   vpc = true
 
   tags = {
-    Name = "${var.app_name}-nat-eip"
+    Name = "${var.app_name}-nat-eip-1"
   }
 }
 
-# NAT gateway  (1 NAT 1 EIP が必要)
-# TODO:: NAT 1つ運用なので要見直し
-resource "aws_nat_gateway" "main" {
-  allocation_id = aws_eip.nat.id
+# Nat2で使用するEIP(冗長化)
+resource "aws_eip" "nat_2" {
+  vpc = true
+
+  tags = {
+    Name = "${var.app_name}-nat-eip-2"
+  }
+}
+
+# NAT (1NAT : 1EIP が必要)
+resource "aws_nat_gateway" "main_1" {
+  allocation_id = aws_eip.nat_1.id
   subnet_id     = aws_subnet.publics[1].id
 
   tags = {
-    Name = "${var.app_name}-nat"
+    Name = "${var.app_name}-nat-1"
   }
 
   depends_on = [aws_internet_gateway.main]
 }
 
-# NAT => private に流す設定 ( private 用の route-table が別途必要
-resource "aws_route_table" "private" {
-  vpc_id = aws_vpc.main.id
+# Nat2(冗長化)
+resource "aws_nat_gateway" "main_2" {
+  allocation_id = aws_eip.nat_2.id
+  subnet_id     = aws_subnet.publics[2].id
+
+  tags = {
+    Name = "${var.app_name}-nat-2"
+  }
+
+  depends_on = [aws_internet_gateway.main]
 }
 
-# Route  : RouteTable に NAT へのルートを指定してあげる
+# Route  : RouteTable に NAT_1 へのルートを指定してあげる
 resource "aws_route" "private" {
   destination_cidr_block = "0.0.0.0/0"
   route_table_id = aws_route_table.private.id
-  nat_gateway_id = aws_nat_gateway.main.id
+  nat_gateway_id = aws_nat_gateway.main_1.id
+}
+
+# Route  : RouteTable に NAT_2 へのルートを指定してあげる
+resource "aws_route" "private" {
+  destination_cidr_block = "0.0.0.0/0"
+  route_table_id = aws_route_table.private.id
+  nat_gateway_id = aws_nat_gateway.main_2.id
+}
+
+# NAT => private に流す設定 ( private 用の route-table が別途必要
+resource "aws_route_table" "private" {
+  vpc_id = aws_vpc.main.id
 }
 
 # RouteTableAssociation(Public)  :RouteTable にsubnet を関連付け
@@ -153,3 +180,4 @@ resource "aws_route_table_association" "private" {
   subnet_id = element(aws_subnet.privates.*.id, count.index)
   route_table_id = aws_route_table.private.id
 }
+
