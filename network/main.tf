@@ -154,14 +154,14 @@ resource "aws_nat_gateway" "main_2" {
   depends_on = [aws_internet_gateway.main]
 }
 
-# Route  : RouteTable に NAT_1 へのルートを指定してあげる
+# RouteTable に NAT_1 へのルートを指定してあげる(Nat 設定はこれでおｋ)
 resource "aws_route" "private_1" {
   destination_cidr_block = "0.0.0.0/0"
   route_table_id = aws_route_table.private.id
   nat_gateway_id = aws_nat_gateway.main_1.id
 }
 
-# Route  : RouteTable に NAT_2 へのルートを指定してあげる
+# RouteTable に NAT_2 へのルートを指定してあげる(Nat 設定はこれでおｋ)
 resource "aws_route" "private_2" {
   destination_cidr_block = "0.0.0.0/0"
   route_table_id = aws_route_table.private.id
