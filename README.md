@@ -1,10 +1,14 @@
 # sample-terraform
 ![Image](.docs/ECS.drawio.png)
+
 ## setup
 1. Create terraform environment with docker
 ```
 // set your credential keys in .env
 $ cp .env.example .env
+
+// set prod envvalue
+$ cp .env.production.example .envproduction
 
 // set your public key
 $ vim ec2/sample-ec2-key.pub
@@ -13,27 +17,25 @@ $ vim ec2/sample-ec2-key.pub
 2. Run terraform
 ```
 $ docker-compose up -d
-$ docker-compose exec terraform /bin/ash
 
-設定を変えた場合、毎回は走らせること
-# terraform init 
+// 設定を変えた場合、毎回は走らせること
+# make init 
 
-// 	initialization (if you change a file , please run)
-# terraform plan
+// initialization (if you change a file , please run)
+# make plan
 
 // create aws resources 
-# terraform apply
+# make apply
 
 // destroy 
-# terraform destroy
+# make destroy
 ```
 
-3. ECR
+3. set value in AWS
+```shell
+$ make ecr_repo   # ecrにイメージの型をpush
+$ make ssm-store  # パラメーターストアに環境変数を登録
 ```
-$ aws ecr create-repository --repository-name sample-app
-$ aws ecr create-repository --repository-name sample-nginx
-```
-4. 
 Q  how to connect ec2 ?
 ```
 $ ssh -i ~/.ssh/秘密鍵 ec2-user@IPアドレス
