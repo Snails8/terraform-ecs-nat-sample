@@ -2,7 +2,9 @@ version: '3'
 services:
   terraform:
     container_name: terraform
-    image: hashicorp/terraform:0.14.7
+    build:
+      context: .docker
+      dockerfile: Dockerfile
     env_file:
       - .env
     volumes:
