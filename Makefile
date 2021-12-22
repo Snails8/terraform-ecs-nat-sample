@@ -6,7 +6,7 @@
 include .env
 
 DC := docker-compose exec terraform
-ENV_FILE := .env.production
+ENV_PROD := .env.production
 ENV_GITHUB := .env.github
 
 # aws cliは入っておく。
@@ -18,6 +18,8 @@ ssm-store:
 	sh ssm-put.sh $(TF_VAR_APP_NAME) .env.production && \
 	sh ssm-put.sh $(TF_VAR_APP_NAME) .env
 
+up:
+	docker-compose up -d --build
 init:
 	@${DC} terraform init
 
@@ -30,7 +32,8 @@ migrate:
 
 # Make resources by terraform
 apply:
-	@${DC} terraform apply
+	@${DC} terraform init
+	${DC} terraform apply
 
 # Refresh tfstate if created resources are changed by manually.
 refresh:
@@ -46,7 +49,7 @@ destroy:
 
 # SSM / Github SECRETに登録する値の用意
 outputs:
-	@${DC} terraform output -json | ${DC} jq -r '"DB_HOST=\(.db_endpoint.value)"'  > $(ENV_FILE)  && \
-	${DC} terraform output -json |  ${DC} jq -r '"REDIS_HOST=\(.redis_hostname.value[0].address)"' >> $(ENV_FILE)  && \
+	@${DC} terraform output -json | ${DC} jq -r '"DB_HOST=\(.db_endpoint.value)"'  > $(ENV_PROD)  && \
+	${DC} terraform output -json |  ${DC} jq -r '"REDIS_HOST=\(.redis_hostname.value[0].address)"' >> $(ENV_PROD)  && \
 	${DC} terraform output -json |  ${DC} jq -r '"SUBNETS=\(.db_subnets.value)"' > $(ENV_GITHUB) && \
     ${DC} terraform output -json |  ${DC} jq -r '"SECURITY_GROUPS=\(.db_security_groups.value)"' >> $(ENV_GITHUB)
