@@ -63,7 +63,7 @@ resource "aws_db_subnet_group" "main" {
 # 注意: tfstateファイルには生のパスワードが記載されるので。取り扱いには注意
 # =====================================================
 resource "aws_db_instance" "main" {
-  identifier = local.name
+  identifier = var.database_name
 
   vpc_security_group_ids = [aws_security_group.main.id]
   db_subnet_group_name   = aws_db_subnet_group.main.name
@@ -77,10 +77,10 @@ resource "aws_db_instance" "main" {
 
   port = 5432
 
-  name = var.app_name
+  name = var.database_name
   username = var.master_username
   password = var.master_password
 
-  final_snapshot_identifier = local.name  # DBスナップショットの名前
+  final_snapshot_identifier = var.database_name  # DBスナップショットの名前
   skip_final_snapshot = false  # default はfalse
 }
