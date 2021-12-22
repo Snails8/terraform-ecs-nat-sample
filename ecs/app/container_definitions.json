@@ -1,7 +1,7 @@
 [
   {
     "name": "nginx",
-    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/sample-nginx:${tag}",
+    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/${name}-nginx:${tag}",
     "portMappings": [
       {
         "containerPort": 80,
@@ -20,13 +20,13 @@
       "options": {
         "awslogs-region": "${region}",
         "awslogs-group": "/${name}/ecs",
-        "awslogs-stream-prefix": "sample-nginx"
+        "awslogs-stream-prefix": "${name}-nginx"
       }
     }
   },
   {
     "name": "app",
-    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/sample-app:${tag}",
+    "image": "${account_id}.dkr.ecr.${region}.amazonaws.com/${name}-app:${tag}",
     "mountPoints": [
       {
         "sourceVolume": "app-storage",
@@ -38,21 +38,51 @@
       "options": {
         "awslogs-region": "${region}",
         "awslogs-group": "/${name}/ecs",
-        "awslogs-stream-prefix": "sample-app"
+        "awslogs-stream-prefix": "${name}-app"
       }
     },
     "environment": [
       {
-        "name": "APP_KEY",
-        "value": "${app_key}"
+        "name": "APP_NAME",
+        "valueFrom": "/${name}/TF_VAR_APP_NAME"
       },
       {
         "name": "APP_ENV",
         "value": "production"
       },
       {
+        "name": "APP_SCHEME",
+        "value": "https"
+      },
+      {
         "name": "LOG_CHANNEL",
         "value": "stderr"
+      }
+    ],
+    "secrets": [
+      {
+        "name": "APP_KEY",
+        "valueFrom": "/${name}/TF_VAR_APP_KEY"
+      },
+      {
+        "name": "REDIS_HOST",
+        "valueFrom": "/${name}/REDIS_HOST"
+      },
+      {
+        "name": "DB_HOST",
+        "valueFrom": "/${name}/DB_HOST"
+      },
+      {
+        "name": "DB_DATABASE",
+        "valueFrom": "/${name}/TF_VAR_DB_NAME"
+      },
+      {
+        "name": "DB_USERNAME",
+        "valueFrom": "/${name}/TF_VAR_DB_MASTER_NAME"
+      },
+      {
+        "name": "DB_PASSWORD",
+        "valueFrom": "/${name}/TF_VAR_DB_MASTER_PASS"
       }
     ]
   }
