@@ -27,7 +27,7 @@ provider "aws" {
 # ========================================================
 module "network" {
   source = "./network"
-  app_name = var.app_name
+  app_name = var.APP_NAME
   azs = var.azs
 }
 
@@ -37,7 +37,7 @@ module "network" {
 # ========================================================
 module "ec2" {
   source = "./ec2"
-  app_name = var.app_name
+  app_name = var.APP_NAME
   vpc_id    = module.network.vpc_id
   subnet_id = module.network.ec2_subnet_id
 }
@@ -49,7 +49,7 @@ module "ec2" {
 # ========================================================
 module "ecs" {
   source = "./ecs/app"
-  app_name = var.app_name
+  app_name = var.APP_NAME
   vpc_id   = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
@@ -67,26 +67,26 @@ module "ecs" {
 # cluster 作成
 module "ecs_cluster" {
   source   = "./ecs/cluster"
-  app_name = var.app_name
+  app_name = var.APP_NAME
 }
 
 # ACM 発行
 module "acm" {
   source   = "./acm"
-  app_name = var.app_name
-  zone     = var.zone
-  domain   = var.domain
+  app_name = var.APP_NAME
+  zone     = var.ZONE
+  domain   = var.DOMAIN
 }
 
 # ELB の設定
 module "elb" {
   source            = "./elb"
-  app_name          = var.app_name
+  app_name          = var.APP_NAME
   vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
 
-  domain = var.domain
-  zone   = var.zone
+  domain = var.DOMAIN
+  zone   = var.ZONE
   acm_id = module.acm.acm_id 
 }
 
@@ -94,7 +94,7 @@ module "elb" {
 # ECS-Agentが使用するIAMロール や タスク(=コンテナ)に付与するIAMロール の定義
 module "iam" {
   source = "./iam"
-  app_name = var.app_name
+  app_name = var.APP_NAME
 }
 
 # ========================================================
@@ -106,7 +106,7 @@ module "iam" {
 module "rds" {
   source = "./rds"
 
-  app_name = var.app_name
+  app_name = var.APP_NAME
   vpc_id   = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 
@@ -121,7 +121,7 @@ module "rds" {
 # ========================================================
 module "elasticache" {
   source = "./elasticache"
-  app_name = var.app_name
+  app_name = var.APP_NAME
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
 }
@@ -132,6 +132,6 @@ module "elasticache" {
 # ========================================================
 module "ses" {
   source = "./ses"
-  domain = var.domain
-  zone   = var.zone
+  domain = var.DOMAIN
+  zone   = var.ZONE
 }

@@ -1,6 +1,5 @@
-variable "app_name" {
+variable "APP_NAME" {
   type = string
-  default = "sample"
 }
 
 # AZ の設定(冗長化のため配列でlist化してある)
@@ -10,15 +9,13 @@ variable "azs" {
 }
 
 # ELB で使用 https化に使う
-variable "domain" {
+variable "DOMAIN" {
   type = string
-  default = "snails8.site"
 }
 
 # acm で使用 (TLS証明書)
-variable "zone" {
+variable "ZONE" {
   type = string
-  default = "snails8.site"
 }
 
 variable "APP_KEY" {
@@ -33,12 +30,6 @@ variable "LOKI_PASS" {
   type = string
 }
 
-# 動作検証用の場合true (SES,ACM を作成しない)
-variable "test_enviroment" {
-  default = true
-  # default = false
-}
-
 # RDS で使用
 variable "DB_NAME" {
   type = string
@@ -51,3 +42,18 @@ variable "DB_MASTER_NAME" {
 variable "DB_MASTER_PASS" {
   type = string
 }
+
+# 以下固定化し共有するときに使用
+#variable "app_name" {
+#  type = string
+#  default = "sample"
+#}
+#variable "domain" {
+#  type = string
+#  default = "snails8.site"
+#}
+#
+#variable "zone" {
+#  type = string
+#  default = "snails8.site"
+#}
