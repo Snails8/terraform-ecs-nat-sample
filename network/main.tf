@@ -8,7 +8,7 @@
 resource "aws_vpc" "main" {
   cidr_block = var.vpc_cidr
 
-  enable_dns_hostnames = true # DNS解決を有効化
+  enable_dns_hostnames = true  # DNS解決を有効化
   enable_dns_support   = true  # DNSホスト名を有効化
 
   tags = {
@@ -24,12 +24,25 @@ resource "aws_subnet" "publics" {
   count = length(var.public_subnet_cidrs)
 
   vpc_id = aws_vpc.main.id
-
-  availability_zone = var.azs[count.index]
-  cidr_block = var.public_subnet_cidrs[count.index]
+  availability_zone       = var.azs[count.index]
+  cidr_block              = var.public_subnet_cidrs[count.index]
+  map_public_ip_on_launch = true   # instanceにパブリックIPを自動的に割り当てる
 
   tags = {
     Name = "${var.app_name}-public-${count.index}"
+  }
+}
+
+# RDS, ECS
+resource "aws_subnet" "privates" {
+  count = length(var.private_subnet_cidrs)
+
+  vpc_id            = aws_vpc.main.id
+  availability_zone = var.azs[count.index]
+  cidr_block        = var.private_subnet_cidrs[count.index]
+
+  tags = {
+    Name = "${var.app_name}-private-${count.index}"
   }
 }
 
@@ -43,20 +56,6 @@ resource "aws_subnet" "ec2" {
 
   tags = {
     Name = "${var.app_name}-ec2"
-  }
-}
-
-# RDS用 private subnet
-resource "aws_subnet" "privates" {
-  count = length(var.private_subnet_cidrs)
-
-  vpc_id = aws_vpc.main.id
-
-  availability_zone = var.azs[count.index]
-  cidr_block        = var.private_subnet_cidrs[count.index]
-
-  tags = {
-    Name = "${var.app_name}-private-${count.index}"
   }
 }
 
@@ -107,77 +106,51 @@ resource "aws_route_table_association" "ec2" {
 }
 
 # ==================================================================
-# NAT gate way
-# インターネットからprivate には直接通信ができないため
+# NAT gate way          *インターネットからprivate には直接通信ができないため
+# count で同時に複数作成
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/nat_gateway
 # ==================================================================
-
-# EIP (ElasticIP)
-resource "aws_eip" "nat_1" {
-  vpc = true
-
-  tags = {
-    Name = "${var.app_name}-nat-eip-1"
-  }
-}
-
-# Nat2で使用するEIP(冗長化)
-resource "aws_eip" "nat_2" {
-  vpc = true
-
-  tags = {
-    Name = "${var.app_name}-nat-eip-2"
-  }
-}
-
 # NAT (1NAT : 1EIP が必要)
-resource "aws_nat_gateway" "main_1" {
-  allocation_id = aws_eip.nat_1.id
-  subnet_id     = aws_subnet.publics[1].id
+resource "aws_nat_gateway" "ecs" {
+  count         = length(aws_subnet.publics)
+  allocation_id = aws_eip.natgateway[count.index].id
+  # Publicに配置するのでsubnet_idはpublicとする。
+  subnet_id = aws_subnet.publics[count.index].id
 
   tags = {
-    Name = "${var.app_name}-nat-1"
+    Name = "${var.app_name}-Fargate-NAT gw"
   }
-
-  depends_on = [aws_internet_gateway.main]
 }
 
-# Nat2(冗長化)
-resource "aws_nat_gateway" "main_2" {
-  allocation_id = aws_eip.nat_2.id
-  subnet_id     = aws_subnet.publics[2].id
-
+# Fargate用のNAT gateway用EIP
+resource "aws_eip" "natgateway" {
+  vpc   = true
+  count = length(aws_subnet.publics)
   tags = {
-    Name = "${var.app_name}-nat-2"
+    Name = "${var.app_name}-Fargate"
   }
-
-  depends_on = [aws_internet_gateway.main]
 }
 
-# RouteTable に NAT_1 へのルートを指定してあげる(Nat 設定はこれでおｋ)
-resource "aws_route" "private_1" {
-  destination_cidr_block = "0.0.0.0/0"
-  route_table_id = aws_route_table.private.id
-  nat_gateway_id = aws_nat_gateway.main_1.id
-}
-
-# RouteTable に NAT_2 へのルートを指定してあげる(Nat 設定はこれでおｋ)
-resource "aws_route" "private_2" {
-  destination_cidr_block = "0.0.0.0/0"
-  route_table_id = aws_route_table.private.id
-  nat_gateway_id = aws_nat_gateway.main_2.id
-}
-
-# NAT => private に流す設定 ( private 用の route-table が別途必要
 resource "aws_route_table" "private" {
+  count  = length(aws_subnet.publics)
   vpc_id = aws_vpc.main.id
+  tags = {
+    Name = "${var.app_name}-private-${count.index}"
+  }
 }
 
-# RouteTableAssociation(Public)  :RouteTable にsubnet を関連付け
+# RouteTable にsubnet を関連付け、FargateにDockerPullできるように設定
 resource "aws_route_table_association" "private" {
   count = length(var.private_subnet_cidrs)
 
   subnet_id = element(aws_subnet.privates.*.id, count.index)
-  route_table_id = aws_route_table.private.id
+  route_table_id = aws_route_table.private[count.index].id
 }
 
+# RouteTable に NAT へのルートを指定してあげる(Nat 設定はこれでおｋ)
+resource "aws_route" "private" {
+  count                  = length(aws_subnet.privates)
+  route_table_id         = aws_route_table.private[count.index].id
+  nat_gateway_id         = aws_nat_gateway.ecs[count.index].id
+  destination_cidr_block = "0.0.0.0/0"
+}
