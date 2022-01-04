@@ -90,6 +90,7 @@ resource "aws_security_group" "ecs" {
   description = "${var.app_name}-ecs"
   vpc_id = var.vpc_id
 
+  # 入り口を定義しないとprivate構成では503になる
   ingress {
     from_port   = 443
     to_port     = 443
