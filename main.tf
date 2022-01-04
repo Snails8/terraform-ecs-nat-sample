@@ -76,9 +76,9 @@ module "ecs" {
   loki_pass = var.LOKI_PASS
 
   sg_list = [
-#    module.security_group.http_security_group_id,   <- ALBの設定
+    module.security_group.alb_sg_id,  # ALBの設定
     module.security_group.ecs_sg_id,
-#    module.security_group.redis_ecs_security_group_id   <- redis
+    module.security_group.redis_ecs_sg_id  # redis
   ]
 }
 
@@ -102,10 +102,11 @@ module "elb" {
   app_name          = var.APP_NAME
   vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
+  alb_sg            = module.security_group.alb_sg_id
 
   domain = var.DOMAIN
   zone   = var.ZONE
-  acm_id = module.acm.acm_id 
+  acm_id = module.acm.acm_id
 }
 
 # IAM 設定

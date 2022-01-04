@@ -7,10 +7,10 @@ resource "aws_lb_target_group" "main" {
   vpc_id = var.vpc_id
 
   # ALBからECSタスクのコンテナへトラフィックを振り分ける設定(ECS(nginx)へ流す)
-  target_type = "ip"
-  port = 80
+  target_type          = "ip"
+  port                 = 80
   deregistration_delay = 300
-  protocol = "HTTP"
+  protocol             = "HTTP"
 
   # コンテナへの死活監視設定
   health_check {
