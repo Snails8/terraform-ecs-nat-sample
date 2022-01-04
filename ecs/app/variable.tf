@@ -17,8 +17,8 @@ variable "private_subnet_ids" {
   type = list(string)
 }
 
-# ELB の設定 ecs >load_balancer >aws_lb_listener_rule で使用
-variable "https_listener_arn" {
+# ALB target groupの設定
+variable "target_group_arn" {
   type = string
 }
 

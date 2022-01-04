@@ -65,7 +65,7 @@ module "ecs" {
 
   cluster_name = module.ecs_cluster.cluster_name
   # elb の設定
-  https_listener_arn  = module.elb.https_listener_arn
+  target_group_arn               = module.elb.aws_lb_target_group
   # ECS のtask に関連付けるIAM の設定
   iam_role_task_execution_arn = module.iam.iam_role_task_execution_arn
   app_key = var.APP_KEY

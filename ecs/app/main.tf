@@ -6,12 +6,9 @@ resource "aws_ecs_task_definition" "main" {
 
   # データプレーンの選択
   requires_compatibilities = ["FARGATE"]
-  # ECSタスクが使用可能なリソースの上限 (タスク内のコンテナはこの上限内に使用するリソースを収める必要があり、メモリが上限に達した場合OOM Killer にタスクがキルされる
-  cpu    = 256
-  memory = 512
-
-  # ECSタスクのネットワークドライバ  :Fargateを使用する場合は"awsvpc"
-  network_mode = "awsvpc"
+  network_mode = "awsvpc"  # ECSタスクのネットワークドライバ  :Fargateを使用する場合は"awsvpc"
+  cpu          = 256  # ECSタスクが使用可能なリソースの上限 (タスク内のコンテナはこの上限内に使用するリソースを収める必要があり、メモリが上限に達した場合OOM Killer にタスクがキルされる
+  memory       = 512
 
   # 起動するコンテナの定義 (nginx, app)
   container_definitions = data.template_file.container_definitions.rendered
@@ -30,8 +27,7 @@ resource "aws_ecs_task_definition" "main" {
 # https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/ecs_cluster
 # ========================================================
 resource "aws_ecs_service" "main" {
-  # 依存関係の記述 : aws_lb_listener_rule.main" リソースの作成が完了するのを待ってから当該リソースの作成を開始
-  depends_on = [aws_lb_listener_rule.main]
+  # depends_on = [aws_lb_listener_rule.main]
 
   # clusterの指定
   cluster = var.cluster_name
@@ -54,7 +50,8 @@ resource "aws_ecs_service" "main" {
   }
   
   load_balancer {
-    target_group_arn = aws_lb_target_group.main.arn
+#    target_group_arn = aws_lb_target_group.main.arn
+    target_group_arn = var.target_group_arn
     container_name   = "nginx"
     container_port   = 80
   }
@@ -68,45 +65,4 @@ resource "aws_ecs_service" "main" {
 resource "aws_cloudwatch_log_group" "main" {
   name = "/${local.app_name}/ecs"
   retention_in_days = 7
-}
-
-
-# ==========================================================
-# ALB の設定
-# ==========================================================
-# ターゲットグループ: ヘルスチェック(死活監視)を行う
-resource "aws_lb_target_group" "main" {
-  name = var.app_name
-
-  vpc_id = var.vpc_id
-
-  # ALBからECSタスクのコンテナへトラフィックを振り分ける設定(ECS(nginx)へ流す)
-  port = 80
-  target_type = "ip"
-  protocol = "HTTP"
-
-  # コンテナへの死活監視設定
-  health_check {
-    port = 80
-    path = "/"
-  }
-}
-
-# リスナー: ロードバランサがリクエスト受けた際、どのターゲットグループへリクエストを受け渡すのかの設定
-resource "aws_lb_listener_rule" "main" {
-  # リスナー(アクセス可能にするALBの設定)の指定
-  listener_arn = var.https_listener_arn
-
-  # 受け取ったトラフィックをターゲットグループへ受け渡す
-  action {
-    type = "forward"
-    target_group_arn = aws_lb_target_group.main.arn
-  }
-
-  # ターゲットグループへ受け渡すトラフィックの条件
-  condition {
-    path_pattern {
-      values = ["*"]
-    }
-  }
 }
