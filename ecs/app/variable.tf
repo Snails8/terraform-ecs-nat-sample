@@ -6,6 +6,12 @@ variable "vpc_id" {
   type = string
 }
 
+# ECSのsg
+variable "sg_list" {
+  description = "ECS security group.HTTP/HTTP security group is expected"
+  type        = list(string)
+}
+
 # ecs  で 使用
 variable "private_subnet_ids" {
   type = list(string)

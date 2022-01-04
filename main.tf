@@ -28,12 +28,22 @@ provider "aws" {
 module "network" {
   source = "./network"
   app_name = var.APP_NAME
-  azs = var.azs
+  azs      = var.azs
+  vpc_cidr = var.vpc_cidr
+}
+
+# ========================================================
+# Security Group
+# ========================================================
+module "security_group" {
+  source = "./security_group"
+  app_name = var.APP_NAME
+  vpc_cidr = var.vpc_cidr
+  vpc_id   = module.network.vpc_id
 }
 
 # ========================================================
 # EC2 (vpc_id, subnet_id が必要)
-#
 # ========================================================
 module "ec2" {
   source = "./ec2"
@@ -62,6 +72,12 @@ module "ecs" {
 
   loki_user = var.LOKI_USER
   loki_pass = var.LOKI_PASS
+
+  sg_list = [
+#    module.security_group.http_security_group_id,   <- ALBの設定
+    module.security_group.ecs_sg_id,
+#    module.security_group.redis_ecs_security_group_id   <- redis
+  ]
 }
 
 # cluster 作成
