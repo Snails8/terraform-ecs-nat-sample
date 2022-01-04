@@ -135,13 +135,13 @@ module "rds" {
 
 # ========================================================
 # Elasticache (Redis)
-#
 # ========================================================
 module "elasticache" {
   source = "./elasticache"
   app_name = var.APP_NAME
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
+  redis_sg_id        = module.security_group.redis_ecs_sg_id
 }
 
 # ========================================================
