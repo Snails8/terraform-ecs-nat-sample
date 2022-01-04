@@ -88,8 +88,14 @@ resource "aws_ecs_service" "main" {
 resource "aws_security_group" "ecs" {
   name = "${var.app_name}-ecs"
   description = "${var.app_name}-ecs"
-
   vpc_id = var.vpc_id
+
+  ingress {
+    from_port   = 443
+    to_port     = 443
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   # セキュリティグループ内のリソースからインターネットへのアクセス許可設定(docker-hubのpullに使用
   egress {
@@ -100,7 +106,7 @@ resource "aws_security_group" "ecs" {
   }
 
   tags = {
-    Name = "${var.app_name}-ecs"
+    Name = "${var.app_name}-ecsEndpoint"
   }
 }
 
