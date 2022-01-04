@@ -45,3 +45,27 @@ variable "loki_pass" {
 variable "iam_role_task_execution_arn" {
   type = string
 }
+
+data "aws_region" "current" {}
+data "aws_caller_identity" "current" {}
+
+locals {
+  app_name   = var.app_name
+  account_id = data.aws_caller_identity.current.account_id
+  region     = data.aws_region.current.name
+}
+
+# コンテナ定義を呼び出す
+data "template_file" "container_definitions" {
+  template = file("./ecs/app/container_definitions.json")
+
+  vars = {
+    tag        = "latest"
+    name       = var.app_name
+    account_id = local.account_id
+    region     = local.region
+    app_key    = var.app_key
+    loki_user  = var.loki_user
+    loki_pass  = var.loki_pass
+  }
+}
