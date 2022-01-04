@@ -36,6 +36,6 @@ resource "aws_security_group_rule" "ecs" {
   from_port = 80
   to_port   = 80
   protocol  = "tcp"
-  # 同一VPC内からのアクセスのみ許可
+  # 同一VPC内からのアクセスのみ許可 (0.0.0.0/0 だと502 bad wayになる)
   cidr_blocks = ["0.0.0.0/16"]
 }
