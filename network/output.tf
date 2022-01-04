@@ -12,7 +12,7 @@ output "ec2_subnet_id" {
   value = aws_subnet.ec2.id
 }
 
-# ECS/RDS で使用
+# ECS/RDS/SG で使用
 output "private_subnet_ids" {
   value = aws_subnet.privates.*.id
 }
@@ -20,4 +20,9 @@ output "private_subnet_ids" {
 # ELB で使用
 output "public_subnet_ids" {
   value = aws_subnet.publics.*.id
+}
+
+# sg(VPC endpoint) で使用
+output "route_table_private" {
+  value = aws_route.private[*]
 }

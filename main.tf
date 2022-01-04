@@ -36,10 +36,12 @@ module "network" {
 # Security Group
 # ========================================================
 module "security_group" {
-  source = "./security_group"
+  source   = "./security_group"
   app_name = var.APP_NAME
   vpc_cidr = var.vpc_cidr
   vpc_id   = module.network.vpc_id
+  private_route_table  = module.network.route_table_private
+  private_subnets      = module.network.private_subnet_ids
 }
 
 # ========================================================
