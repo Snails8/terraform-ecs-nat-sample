@@ -2,10 +2,6 @@
 # route53 zoneに関しては運用時変更してください
 # メール送信に使用
 # =================================================
-data "aws_route53_zone" "main" {
-  name         = var.zone
-  private_zone = false
-}
 
 # SESドメインIDリソースの提供
 resource "aws_ses_domain_identity" "ses" {

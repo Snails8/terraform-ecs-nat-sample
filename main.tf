@@ -26,7 +26,7 @@ provider "aws" {
 # VPC, subnet(pub, pri), IGW, RouteTable, Route, RouteTableAssociation
 # ========================================================
 module "network" {
-  source = "./network"
+  source = "module/network"
   app_name = var.APP_NAME
   azs      = var.azs
   vpc_cidr = var.vpc_cidr
@@ -36,7 +36,7 @@ module "network" {
 # Security Group
 # ========================================================
 module "security_group" {
-  source   = "./security_group"
+  source   = "module/security_group"
   app_name = var.APP_NAME
   vpc_cidr = var.vpc_cidr
   vpc_id   = module.network.vpc_id
@@ -48,7 +48,7 @@ module "security_group" {
 # EC2 (vpc_id, subnet_id が必要)
 # ========================================================
 module "ec2" {
-  source = "./ec2"
+  source = "module/ec2"
   app_name = var.APP_NAME
   vpc_id    = module.network.vpc_id
   public_subnet_id = module.network.public_subnet_ids[0]
@@ -61,7 +61,7 @@ module "ec2" {
 # ECS(service, cluster elb
 # ========================================================
 module "ecs" {
-  source = "./ecs/app"
+  source = "module/ecs/app"
   app_name = var.APP_NAME
   vpc_id   = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
@@ -85,7 +85,7 @@ module "ecs" {
 
 # cluster 作成
 module "ecs_cluster" {
-  source   = "./ecs/cluster"
+  source   = "module/ecs/cluster"
   app_name = var.APP_NAME
 }
 
@@ -99,7 +99,7 @@ module "acm" {
 
 # ELB の設定
 module "elb" {
-  source            = "./elb"
+  source            = "module/elb"
   app_name          = var.APP_NAME
   vpc_id            = module.network.vpc_id
   public_subnet_ids = module.network.public_subnet_ids
@@ -113,7 +113,7 @@ module "elb" {
 # IAM 設定
 # ECS-Agentが使用するIAMロール や タスク(=コンテナ)に付与するIAMロール の定義
 module "iam" {
-  source = "./iam"
+  source = "module/iam"
   app_name = var.APP_NAME
 }
 
@@ -124,7 +124,7 @@ module "iam" {
 # ========================================================
 # RDS (PostgreSQL)
 module "rds" {
-  source = "./rds"
+  source = "module/rds"
 
   app_name = var.APP_NAME
   vpc_id   = module.network.vpc_id
@@ -140,7 +140,7 @@ module "rds" {
 # Elasticache (Redis)
 # ========================================================
 module "elasticache" {
-  source = "./elasticache"
+  source = "module/elasticache"
   app_name = var.APP_NAME
   vpc_id = module.network.vpc_id
   private_subnet_ids = module.network.private_subnet_ids
@@ -152,7 +152,7 @@ module "elasticache" {
 # メール送信に使用
 # ========================================================
 module "ses" {
-  source = "./ses"
+  source = "module/ses"
   domain = var.DOMAIN
   zone   = var.ZONE
 }

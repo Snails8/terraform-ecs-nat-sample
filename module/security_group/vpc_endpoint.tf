@@ -12,7 +12,7 @@ resource "aws_vpc_endpoint_route_table_association" "private_s3" {
   count           = length(var.private_subnets)
   vpc_endpoint_id = aws_vpc_endpoint.s3.id
   route_table_id  = var.private_route_table[count.index].route_table_id
-}
+}∑
 
 # ================================================================
 # Interface型なので各種セキュリティグループと紐づく
