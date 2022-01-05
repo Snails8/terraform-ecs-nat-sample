@@ -51,7 +51,8 @@ module "ec2" {
   source = "./ec2"
   app_name = var.APP_NAME
   vpc_id    = module.network.vpc_id
-  subnet_id = module.network.ec2_subnet_id
+  public_subnet_id = module.network.public_subnet_ids[0]
+  ssh_sg_id        = module.security_group.ssh_sg_id
 }
 
 # ========================================================

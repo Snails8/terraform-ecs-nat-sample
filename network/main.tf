@@ -132,23 +132,3 @@ resource "aws_route" "private" {
   nat_gateway_id         = aws_nat_gateway.ecs[count.index].id
   destination_cidr_block = "0.0.0.0/0"
 }
-
-# ========================================================================
-# EC2用(踏み台) private subnet
-resource "aws_subnet" "ec2" {
-  cidr_block        = "10.0.100.0/24"
-  availability_zone = "ap-northeast-1a"
-  vpc_id            = aws_vpc.main.id
-
-  map_public_ip_on_launch = true
-
-  tags = {
-    Name = "${var.app_name}-ec2"
-  }
-}
-
-# RouteTableAssociation(EC2) EC2 subnet と関連付け
-resource "aws_route_table_association" "ec2" {
-  subnet_id      = aws_subnet.ec2.id
-  route_table_id = aws_route_table.public.id
-}

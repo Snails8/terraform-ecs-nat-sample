@@ -62,22 +62,21 @@ data "aws_ami" "recent_amazon_linux2" {
 # ========================================================
 
 resource "aws_instance" "main" {
-  ami = data.aws_ami.recent_amazon_linux2.image_id
-  instance_type = "t2.micro"
-  key_name = aws_key_pair.main.id
-
-  vpc_security_group_ids = [aws_security_group.main.id]
-  subnet_id = var.subnet_id
+  ami           = data.aws_ami.recent_amazon_linux2.image_id
+  instance_type = "t3.nano"  # freeでいきたい場合 t2.micro
+  key_name      = aws_key_pair.main.id
+  subnet_id     = var.public_subnet_id
+  vpc_security_group_ids = [var.ssh_sg_id]
 
   # EBS最適化
-  # ebs_optimized = true
+  ebs_optimized = true
 
   # EBSの設定
   root_block_device {
     volume_size = 8
     volume_type = "gp3"
-    iops = 3000
-    throughput = 125
+    iops        = 3000
+    throughput  = 125
     delete_on_termination = true
 
     tags = {
@@ -86,59 +85,16 @@ resource "aws_instance" "main" {
   }
 
   tags = {
-    Name = var.app_name
-  }
-}
-# ========================================================
-# SecurityGroup
-# name, description, vpc_id, Rule, egress,
-# terraform での作成の場合、GUIでは自動で設定してくれるアウトバウンドを設定する必要がある(GUIの default は有効)
-# outbound 機器から外部に出力されるパケットをエグレス 上り
-# -1 にすればterraform側で勝手に オールにする https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/security_group#egress
-# ========================================================
-resource "aws_security_group" "main" {
-  vpc_id = var.vpc_id
-
-  name        = "${var.app_name}-ec2"
-  description = "${var.app_name}-ec2"
-
-  # アウトバウンド 設定
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = {
-    Name = "${var.app_name}-ec2"
+    Name = "${var.app_name}-DBStepInstance"
   }
 }
 
-# SecurityGroupRule SSH
-resource "aws_security_group_rule" "ssh" {
-  security_group_id = aws_security_group.main.id
-  type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 22
-  to_port           = 22
-  protocol          = "tcp"
-}
-
-# SecurityGroupRule http
-resource "aws_security_group_rule" "http" {
-  security_group_id = aws_security_group.main.id
-  type              = "ingress"
-  cidr_blocks       = ["0.0.0.0/0"]
-  from_port         = 80
-  to_port           = 80
-  protocol          = "tcp"
-}
-
+# ==================================================================
 # SSHKey (ssh-keygen -t rsa で発行したpub-key を指定)
+# ==================================================================
 resource "aws_key_pair" "main" {
-  key_name   = "sample-ec2-key"
-  public_key = file("./ec2/sample-ec2-key.pub")
+  key_name   = "${var.app_name}-ec2-key"
+  public_key = file("./ec2/ec2-key.pub")
 }
 
 # EIP (ElasticIP)
@@ -147,6 +103,6 @@ resource "aws_eip" "main" {
   vpc      = true
 
   tags = {
-    Name = var.app_name
+    Name = "${var.app_name}-DB"
   }
 }

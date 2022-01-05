@@ -3,19 +3,14 @@ output "vpc_id" {
   value = aws_vpc.main.id
 }
 
-# EC2 で使用
-output "ec2_subnet_id" {
-  value = aws_subnet.ec2.id
+# ELB / EC2 で使用
+output "public_subnet_ids" {
+  value = aws_subnet.publics.*.id
 }
 
 # ECS/RDS/SG で使用
 output "private_subnet_ids" {
   value = aws_subnet.privates.*.id
-}
-
-# ELB で使用
-output "public_subnet_ids" {
-  value = aws_subnet.publics.*.id
 }
 
 # sg(VPC endpoint) で使用
