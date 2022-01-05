@@ -127,6 +127,7 @@ module "rds" {
 
   app_name = var.APP_NAME
   vpc_id   = module.network.vpc_id
+  db_sg_id           = module.security_group.db_sg_id
   private_subnet_ids = module.network.private_subnet_ids
 
   database_name   = var.DB_NAME

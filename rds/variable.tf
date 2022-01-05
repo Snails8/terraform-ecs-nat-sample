@@ -6,6 +6,11 @@ variable "vpc_id" {
   type = string
 }
 
+variable "db_sg_id" {
+  type        = string
+  description = "RDB security group"
+}
+
 variable "private_subnet_ids" {
   type = list(string)
 }
@@ -20,4 +25,8 @@ variable "master_username" {
 
 variable "master_password" {
   type = string
+}
+
+locals {
+  name = "${var.app_name}-pgsql"
 }
