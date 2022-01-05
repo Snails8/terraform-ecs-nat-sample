@@ -94,7 +94,7 @@ resource "aws_instance" "main" {
 # ==================================================================
 resource "aws_key_pair" "main" {
   key_name   = "${var.app_name}-ec2-key"
-  public_key = file("./ec2/ec2-key.pub")
+  public_key = file("./module/ec2/ec2-key.pub")
 }
 
 # EIP (ElasticIP)

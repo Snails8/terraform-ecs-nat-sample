@@ -7,13 +7,13 @@
 # AWS->ECSのサービスを信頼する => ECSがAssumeRoleを行えるようになる
 resource "aws_iam_role" "task_execution" {
   name = "${var.app_name}-TaskExecution"
-  assume_role_policy = file("./iam/task_execution_role.json")
+  assume_role_policy = file("./module/iam/task_execution_role.json")
 }
 
 # policy の追加 (Log 関連)
 resource "aws_iam_role_policy" "task_execution" {
   role = aws_iam_role.task_execution.id
-  policy = file("./iam/task_execution_role_policy.json")
+  policy = file("./module/iam/task_execution_role_policy.json")
 }
 
 # role にpolicy をattach するときに必要な設定
